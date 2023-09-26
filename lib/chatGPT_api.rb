@@ -3,7 +3,7 @@ require 'uri'
 require 'json'
 require 'dotenv'
 
-module LinguaTech
+module RubyOpenAI
   Dotenv.load
 
   module Errors
@@ -64,5 +64,5 @@ module LinguaTech
   end
 end
 
-response = LinguaTech::ChatGPTAPI.send_message('Hello!')
+response = RubyOpenAI::ChatGPTAPI.send_message('Hello!')
 puts response['choices'][0]['message']['content']
