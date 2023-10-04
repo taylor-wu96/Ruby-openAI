@@ -1,0 +1,35 @@
+<h2>Chat with Assistant</h2>
+
+<div id="chat-box"></div>
+
+<textarea id="userMessage"></textarea>
+<button onclick="sendMessage()">Send</button>
+
+<script>
+  // Fetch existing messages when the page loads
+  fetch('/chats.json')
+    .then(response => response.json())
+    .then(data => {
+      const chatBox = document.getElementById('chat-box');
+      data.forEach(message => {
+        const div = document.createElement('div');
+        div.textContent = message.content;
+        chatBox.appendChild(div);
+      });
+    });
+
+  function sendMessage() {
+    const userMessage = document.getElementById('userMessage').value;
+    fetch('/chats', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ user_message: userMessage })
+    })
+    .then(() => {
+      // You can either fetch messages again or simply append the message to the chat box
+      location.reload(); // Simple way to update the chat, though not the most efficient
+    });
+  }
+</script>
