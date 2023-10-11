@@ -49,7 +49,15 @@ module RubyOpenAI
           },
           {
             'role' => 'user',
-            'content' => message_content
+            'content' => "Hi, my name is Jerry, could you calculate the sum of 1 + 2?"
+          },
+          {
+            'role' => 'assistant',
+            'content' => 'Hello Tom, the sum of 1 + 2 is 4. '
+          },
+          {
+            'role' => 'user',
+            'content' => "Thank you so much for your help. So what is the answer to 1 + 2 ? And what is my name?"
           }
         ]
       })
