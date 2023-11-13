@@ -1,22 +1,28 @@
+# frozen_string_literal: true
+
 require 'net/http'
 require 'uri'
 require 'json'
 require 'dotenv'
 
+# Module to interact with OpenAI's API
 module RubyOpenAI
   Dotenv.load
 
+  # Custom error classes
   module Errors
     class NotFound < StandardError; end
     class Unauthorized < StandardError; end
   end
 
+  # HTTP error mappings
   HTTP_ERROR = {
     401 => Errors::Unauthorized,
     404 => Errors::NotFound
   }.freeze
 
-  class ChatGPTAPI
+  # Class for interfacing with ChatGPT API
+  class ChatGptAPI
     API_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
     API_KEY = ENV['OPENAI_API_KEY']
 
@@ -26,8 +32,6 @@ module RubyOpenAI
       JSON.parse(response.body)
     end
 
-    private
-
     def self.make_request(message_content)
       uri = URI.parse(API_ENDPOINT)
       request = build_request(uri, message_content)
@@ -36,41 +40,36 @@ module RubyOpenAI
       end
     end
 
+    # rubocop:disable Metrics/MethodLength
+    def self.build_request_body(message_content)
+      JSON.dump(
+        {
+          'model' => 'gpt-3.5-turbo',
+          'n' => 1,
+          'messages' => [
+            {
+              'role' => 'user',
+              'content' => message_content
+            }
+          ]
+        }
+      )
+    end
+    # rubocop:enable Metrics/MethodLength
+
     def self.build_request(uri, message_content)
       request = Net::HTTP::Post.new(uri)
       request.content_type = 'application/json'
       request['Authorization'] = "Bearer #{API_KEY}"
-      request.body = JSON.dump({
-        'model' => 'gpt-3.5-turbo',
-        'messages' => [
-          {
-            'role' => 'system',
-            'content' => 'You are a helpful assistant.'
-          },
-          {
-            'role' => 'user',
-            'content' => "Hi, my name is Jerry, could you calculate the sum of 1 + 2?"
-          },
-          {
-            'role' => 'assistant',
-            'content' => 'Hello Tom, the sum of 1 + 2 is 4. '
-          },
-          {
-            'role' => 'user',
-            'content' => "Thank you so much for your help. So what is the answer to 1 + 2 ? And what is my name?"
-          }
-        ]
-      })
+      request.body = build_request_body(message_content)
       request
     end
 
     def self.handle_errors(response)
-      if HTTP_ERROR.keys.include?(response.code.to_i)
-        raise HTTP_ERROR[response.code.to_i], response.message
-      end
+      raise HTTP_ERROR[response.code.to_i], response.message if HTTP_ERROR.keys.include?(response.code.to_i)
     end
   end
 end
 
 response = RubyOpenAI::ChatGPTAPI.send_message('Hello!')
-puts response['choices'][0]['message']['content']
+puts response['choices']
