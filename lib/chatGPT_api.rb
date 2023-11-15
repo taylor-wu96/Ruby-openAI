@@ -26,27 +26,31 @@ module RubyOpenAI
     API_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
     API_KEY = ENV['OPENAI_API_KEY']
 
-    def self.send_message(message_content)
-      response = make_request(message_content)
+    def self.send_message(system_content, message_content)
+      response = make_request(system_content, message_content)
       handle_errors(response)
       JSON.parse(response.body)
     end
 
-    def self.make_request(message_content)
+    def self.make_request(system_content, message_content)
       uri = URI.parse(API_ENDPOINT)
-      request = build_request(uri, message_content)
+      request = build_request(uri, system_content, message_content)
       Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
         http.request(request)
       end
     end
 
     # rubocop:disable Metrics/MethodLength
-    def self.build_request_body(message_content)
+    def self.build_request_body(system_content, message_content)
       JSON.dump(
         {
-          'model' => 'gpt-3.5-turbo',
-          'n' => 1,
+          'model' => 'gpt-4',
+          'temperature' => 0.3,
           'messages' => [
+            {
+              'role' => 'system',
+              'content' => system_content
+            },
             {
               'role' => 'user',
               'content' => message_content
@@ -57,11 +61,11 @@ module RubyOpenAI
     end
     # rubocop:enable Metrics/MethodLength
 
-    def self.build_request(uri, message_content)
+    def self.build_request(uri, system_content, message_content)
       request = Net::HTTP::Post.new(uri)
       request.content_type = 'application/json'
       request['Authorization'] = "Bearer #{API_KEY}"
-      request.body = build_request_body(message_content)
+      request.body = build_request_body(system_content, message_content)
       request
     end
 
@@ -70,6 +74,3 @@ module RubyOpenAI
     end
   end
 end
-
-response = RubyOpenAI::ChatGPTAPI.send_message('Hello!')
-puts response['choices']
