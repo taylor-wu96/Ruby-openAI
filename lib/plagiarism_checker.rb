@@ -16,10 +16,14 @@ end
 
 # Calculate Jaccard similarity between two texts
 def jaccard_similarity(text1, text2)
+  # creates a set of unique words. This means that duplicate words in text content are ignored.
   set1 = Set.new(text1.split)
   set2 = Set.new(text2.split)
+  # Calculates the number of words common to both set1 and set2 (the intersection).
   intersection = set1.intersection(set2).length.to_f
+  # Combines the words from both sets (the union), ensuring each word is unique in this combined set.
   union = set1.union(set2).length.to_f
+  # Dividing the size of the intersection by the size of the union.
   intersection / union
 end
 
@@ -77,7 +81,7 @@ def overlap_coefficient(text1, text2)
   set1 = Set.new(text1.split)
   set2 = Set.new(text2.split)
   intersection = set1.intersection(set2).length.to_f
-  [set1.length, set2.length].min.to_f / intersection
+  intersection / [set1.length, set2.length].min.to_f
 end
 
 # Main method to check plagiarism
