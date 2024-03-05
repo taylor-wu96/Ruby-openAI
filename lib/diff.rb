@@ -55,4 +55,4 @@ def compare_documents(file1, file2, output_path)
 end
 
 # Example usage
-compare_documents('homework_sample/HW2/student1.Rmd', 'homework_sample/HW2/student1_copy.Rmd', 'output/output.html')
+# compare_documents('homework_sample/HW2/student1.Rmd', 'homework_sample/HW2/student1_copy.Rmd', 'output/output.html')

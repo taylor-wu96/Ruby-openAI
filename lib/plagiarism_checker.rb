@@ -68,7 +68,8 @@ def levenshtein_distance(str1, str2)
   return str1.length if str2.empty?
   return str2.length if str1.empty?
 
-  m, n = str1.length, str2.length
+  m = str1.length
+  n = str2.length
   d = Array.new(m + 1) { Array.new(n + 1) }
 
   # Initialize the first row and column of the matrix
@@ -85,7 +86,6 @@ def levenshtein_distance(str1, str2)
 
   d[m][n]
 end
-
 
 # Normalize Levenshtein Distance
 def normalized_levenshtein_distance(text1, text2)
@@ -117,7 +117,8 @@ def plagiarism_checker(directory, output_file)
   files_content = read_files(directory)
 
   CSV.open(output_file, 'w') do |csv|
-    csv << ["File 1", "File 2", "Jaccard Similarity", "Jaccard Similarity with Bigrams", "Cosine Similarity", "Overlap Coefficient", "Normalized Levenshtein Distance", "Normalized Hamming Distance"]
+    csv << ['File 1', 'File 2', 'Jaccard Similarity', 'Jaccard Similarity with Bigrams', 'Cosine Similarity',
+            'Overlap Coefficient', 'Normalized Levenshtein Distance', 'Normalized Hamming Distance']
 
     files_content.keys.combination(2).each do |file1, file2|
       text1 = files_content[file1]
@@ -129,9 +130,10 @@ def plagiarism_checker(directory, output_file)
       overlap = overlap_coefficient(text1, text2)
       levenshtein = 1 - normalized_levenshtein_distance(text1, text2)
 
-      hamming = text1.length == text2.length ? 1 - normalized_hamming_distance(text1, text2).round(2) : "N/A"
+      hamming = text1.length == text2.length ? 1 - normalized_hamming_distance(text1, text2).round(2) : 'N/A'
 
-      csv << [File.basename(file1), File.basename(file2), jaccard.round(2), jaccard_with_bigrams.round(2), cosine.round(2), overlap.round(2), levenshtein.round(2), hamming]
+      csv << [File.basename(file1), File.basename(file2), jaccard.round(2), jaccard_with_bigrams.round(2),
+              cosine.round(2), overlap.round(2), levenshtein.round(2), hamming]
     end
   end
 end
@@ -140,7 +142,7 @@ def create_comparison_matrix(directory, output_file)
   files_content = read_files(directory)
   file_names = files_content.keys.map { |file| File.basename(file) }
 
-  CSV.open(output_file, "w") do |csv|
+  CSV.open(output_file, 'w') do |csv|
     # Creating the header
     csv << ['File / Method'] + file_names
 
@@ -161,7 +163,7 @@ def create_comparison_matrix(directory, output_file)
           cosine = cosine_similarity(text1, text2).round(2)
           overlap = overlap_coefficient(text1, text2).round(2)
           levenshtein = (1 - normalized_levenshtein_distance(text1, text2)).round(2)
-          hamming = text1.length == text2.length ? (1 - normalized_hamming_distance(text1, text2)).round(2) : "N/A"
+          hamming = text1.length == text2.length ? (1 - normalized_hamming_distance(text1, text2)).round(2) : 'N/A'
 
           # Concatenating all measures into a single string for the cell
           row << "J: #{jaccard}, JB: #{jaccard_with_bigrams}, C: #{cosine}, O: #{overlap}, L: #{levenshtein}, H: #{hamming}"
@@ -173,9 +175,9 @@ def create_comparison_matrix(directory, output_file)
 end
 
 # Usage
-folder_index = 2
-directory = "homework_sample/HW#{folder_index}"
-output_file = "output/plagiarism_results#{folder_index}.csv"
-plagiarism_checker(directory, output_file)
+# folder_index = 2
+# directory = "homework_sample/HW#{folder_index}"
+# output_file = "output/plagiarism_results#{folder_index}.csv"
+# plagiarism_checker(directory, output_file)
 # output_file = "output/comparison_matrix#{folder_index}.csv"
 # create_comparison_matrix(directory, output_file)

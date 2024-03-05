@@ -19,7 +19,8 @@ module RubyOpenAI
     end
 
     def self.check_similarity(text1, text2)
-      response = ChatGptAPI.send_message('I want you to act as a plagiarism checker.', "Determine the percentage of similarity for the following texts\nText 1: #{text1}\nText 2: #{text2}\n I want you to answer only with number, without text. Do not write explanations.")
+      response = ChatGptAPI.send_message('I want you to act as a plagiarism checker.',
+                                         "Determine the percentage of similarity for the following texts\nText 1: #{text1}\nText 2: #{text2}\n I want you to answer only with number, without text. Do not write explanations.")
       response['choices'][0]['message']['content']
     end
 
@@ -35,6 +36,6 @@ module RubyOpenAI
   end
 end
 
-directory = 'homework_sample' # replace with your directory path
-markdown_files = RubyOpenAI::PlagiarismChecker.read_markdown_files(directory)
-RubyOpenAI::PlagiarismChecker.compare_files(markdown_files)
+# directory = 'homework_sample' # replace with your directory path
+# markdown_files = RubyOpenAI::PlagiarismChecker.read_markdown_files(directory)
+# RubyOpenAI::PlagiarismChecker.compare_files(markdown_files)
