@@ -41,11 +41,34 @@
 <script>
 import axios from "axios";
 import { ref } from 'vue';
+import { onMounted } from 'vue';
 
 export default {
   setup() {
+
     const messages = ref([]);
     const userInput = ref('');
+
+    onMounted(() => {
+  initialMessages();
+  })
+    const initialMessages = async ()=>{
+
+      try {
+        const { data } = await axios.get("/messages");
+        messages.value = data.map( (chat)=>{
+          return {
+            id: chat.created_at,
+            text: chat.response,
+            sender: chat.role,
+          }
+        
+        }); // Assuming the data is an array of messages
+      } catch (error) {
+        console.error("Failed to fetch initial messages:", error);
+      }
+    
+    }
 
     const sendMessage = () => {
       if (userInput.value.trim()) {
