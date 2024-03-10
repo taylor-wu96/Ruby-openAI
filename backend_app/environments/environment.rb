@@ -12,7 +12,7 @@ module RubyOpenAI
     # load config secrets into local environment variables (ENV)
     Figaro.application = Figaro::Application.new(
       environment: environment, # rubocop:disable Style/HashSyntax
-      path: File.expand_path('environments/secrets.yml')
+      path: File.expand_path('backend_app/environments/secrets.yml')
     )
     Figaro.load
 

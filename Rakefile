@@ -13,7 +13,7 @@ namespace :db do
     Sequel.extension :migration
 
     # Set up the migration path
-    migration_path = File.expand_path('db/migration', __dir__)
+    migration_path = File.expand_path('backend_app/db/migration', __dir__)
 
     # Run the migrations
     Dir.glob("#{migration_path}/*.rb").each { |file| require file }
@@ -27,7 +27,7 @@ namespace :db do
       puts 'Cannot wipe production database!'
       return
     end
-    db_filename = "db/store/#{@app.environment}.db"
+    db_filename = "backend_app/db/store/#{@app.environment}.db"
     FileUtils.rm(db_filename)
     puts "Deleted #{db_filename}"
   end

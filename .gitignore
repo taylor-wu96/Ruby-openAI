@@ -1,4 +1,12 @@
+.bundle/
+node_modules/
+**/environments/secrets.yml
+*.db
 .env
+
+# local env files
+**/.env*.local
+dist/
 Gemfile.lock
 /config/application.yml
 homework_sample

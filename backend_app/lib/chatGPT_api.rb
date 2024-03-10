@@ -7,8 +7,6 @@ require 'dotenv'
 
 # Module to interact with OpenAI's API
 module RubyOpenAI
-  Dotenv.load
-
   # Custom error classes
   module Errors
     class NotFound < StandardError; end
@@ -23,6 +21,7 @@ module RubyOpenAI
 
   # Class for interfacing with ChatGPT API
   class ChatGptAPI
+    Dotenv.load
     API_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
     API_KEY = ENV['OPENAI_API_KEY']
 
@@ -44,7 +43,7 @@ module RubyOpenAI
     def self.build_request_body(system_content, message_content)
       JSON.dump(
         {
-          'model' => 'gpt-4',
+          'model' => 'gpt-3.5-turbo',
           'temperature' => 0.3,
           'messages' => [
             {
