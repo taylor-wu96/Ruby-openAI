@@ -9,22 +9,35 @@
               <el-card class="">
                 Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint quibusdam nemo et asperiores ducimus cum voluptate. Id ipsam at neque a sed? Dicta ducimus illum libero quas, fuga aliquid eum? Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint quibusdam nemo et asperiores ducimus cum voluptate. Id ipsam at neque a sed? Dicta ducimus illum libero quas, fuga aliquid eum?
               </el-card>
-              <el-card>
-                <el-input
-                  v-model="textarea"
-                  style="width: 100%;"
+              <el-card class="note">
 
-                  :rows="20"
+                <el-input
+                  ref="textareaRef"
+                  name="storage_notes"
+                  v-model="textArea"
+                  clearable
+                  style="width: 100%;"
+                  :rows="16"
                   type="textarea"
-                  placeholder="Please input"
-                  @input="handleInput"
+                  placeholder="Leave some notes here..."
+                  @input="handleInput($event, textArea)"
+
+                  @keydown.ctrl.a="handleHighlight"
+                  @keydown.meta.a="handleHighlight"
+                 
                   @copy="handleCopy"
+                  @cut="handleCopy"
                   @paste="handlePaste"
                   @mouseup="handleMouseUp"
                   @focusin="startFocusTime"
                   @focusout="endFocusTime"
-                />
-              <p v-html="highlightedText"></p>
+                >
+                  <!-- Correctly using the append slot -->
+                  <template #append>
+                    <el-button @click="clearTextArea" icon="el-icon-close"></el-button>
+                  </template>
+                </el-input>
+              <p>{{highlightedText}}</p>
             </el-card>
             </el-col>
             <el-col :span="14" class="chat-area cloudy-glass">
@@ -32,22 +45,31 @@
               <el-scrollbar>
                 <div v-for="message in messages" :key="message.id" class="message">
                   <el-card>
-                    <div v-if="message.sender === 'user'">
-                      <el-tag size="small">You</el-tag>
-                      <div>{{ message.text }}</div>
+                    <div v-if="message.sender === 'user'" :id="'user_question_block_' + message.id" @mouseup="handleMouseUp" @copy="handleCopy">
+                      <el-tag size="small" :id="'user_question_tag_' + message.id">You</el-tag>
+                      <div :id="'user_question_' + message.id">{{ message.text }}</div>
                     </div>
-                    <div v-else>
-                      <el-tag size="small" type="success">Chatbot</el-tag>
-                      <div>{{ message.text }}</div>
+                    <div v-else :id="'ai_feedback_block_' + message.id"   @mouseup="handleMouseUp" @copy="handleCopy">
+                      <el-tag  :id="'ai_feedback_tag_' + message.id" size="small" type="success">Chatbot</el-tag>
+                      <div  :id="'ai_feedback_' + message.id" >{{ message.text }}</div>
                     </div>
                   </el-card>
                 </div>
               </el-scrollbar>
               <el-card class="bar">
                 <el-input
+                  name="prompt_input"
                   v-model="userInput"
                   placeholder="Type your message here..."
                   @keyup.enter="sendMessage"
+                  @keydown.ctrl.a="handleHighlight"
+                  @keydown.meta.a="handleHighlight"
+                  @copy="handleCopy"
+                  @cut="handleCopy"
+                  @paste="handlePaste"
+                  @mouseup="handleMouseUp"
+                  @focusin="startFocusTime"
+                  @focusout="endFocusTime"
                   clearable
                 >
                   <template #append>
@@ -68,18 +90,33 @@
 
 <script>
 import axios from "axios";
-import { ref, computed } from 'vue';
-import { onMounted } from 'vue';
+import { ref} from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 
 export default {
   setup() {
 
     const messages = ref([]);
     const userInput = ref('');
+    const textArea = ref('');
+    const textareaRef = ref(null); // Add this line to define a ref for the textarea
+    const highlightedText=ref('');
+
 
     onMounted(() => {
-  initialMessages();
-  })
+      document.addEventListener('keydown', handleHighlight);
+      initialMessages();
+      // Retrieve the value from session storage
+      const storedValue = sessionStorage.getItem('storage_notes');
+      if (storedValue) {
+        textArea.value = storedValue;
+      }
+    })
+
+    // Don't forget to clean up the event listener on component unmount
+    onUnmounted(() => {
+      document.removeEventListener('keydown', handleHighlight);
+    });
     
     
     const initialMessages = async ()=>{
@@ -136,40 +173,87 @@ export default {
 
 
     // Todo event listeners
-    const text = ref('');
-    const highlightedText = computed(() => {
-      const words = text.value.split(' ');
-      return words
-        .map((word) => {
-          if (word.length > 5) {
-            return `<span style="color: red">${word}</span>`;
-          }
-          return word;
-        })
-        .join(' ');
-    });
     let focusTimeStart = 0;
     let focusTimeEnd = 0;
+    const handleInput = (e, value) => {
+      let inputValue;
+      if (e && e.target) {
+        inputValue = e.target.value;
+      } else {
+        inputValue = value;
+      }
 
-    const handleInput = () => {
-      // No need to handle input event since v-model handles it automatically
+      if (inputValue !== undefined) {
+        sessionStorage.setItem('storage_notes', inputValue);
+      }
     };
+    const clearTextArea = () => {
+      textArea.value = '';
+      sessionStorage.setItem('storage_notes', '');
+      handleInput(null, ''); // Update session storage with an empty string
+    };
+
 
     const handleCopy = (e) => {
       console.log(e.clipboardData.getData('text/plain'));
       console.log('Copied Text:', window.getSelection().toString());
+      const targetElementName = e.target.name||e.target.id||e.target.nodeName;
+      highlightedText.value='Copied Text:'+window.getSelection().toString()+ ' from '+ targetElementName
     };
 
-    const handlePaste = async () => {
-      const pastedText = await navigator.clipboard.readText();
+    const handlePaste = async (e) => {
+      const pastedText = await e.clipboardData.getData('text');
       console.log('Pasted Text:', pastedText);
+      const targetElementName = e.target.name||e.target.id||e.target.nodeName;
+      highlightedText.value='Copied Text:'+ pastedText + ' from '+ targetElementName
     };
 
-    const handleMouseUp = () => {
-      const selectedText = window.getSelection().toString();
-      if (selectedText !== '') {
-        console.log('Highlight Text:', selectedText);
+    const handleHighlight = (e) => {
+      
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        // Trigger your highlight logic here
+        console.log('Ctrl+A or Command+A pressed');
+        // Your existing logic for selecting text...
+        let selectedText = '';
+        if (textareaRef.value && textareaRef.value.$refs.textarea) {;
+          const textarea = textareaRef.value.$refs.textarea;
+          selectedText = textarea.value;
+        }
+        //  console.log('select:', selectedText);
+        if (selectedText) {
+          console.log('Selected Text:', selectedText);
+          const targetElementName = e.target.name||e.target.id||e.target.nodeName;
+          highlightedText.value = 'Selected Text: ' + selectedText + ' from '+ targetElementName;
+        } 
       }
+    };
+
+
+
+    const handleMouseUp = (e) => {
+      console.log('Mouse Up');
+
+      let selectedText = '';
+      // Check if the event's target is the textarea
+      if (e.target === textareaRef.value.$refs.textarea) {
+        const start = e.target.selectionStart;
+        const end = e.target.selectionEnd;
+        selectedText = e.target.value.substring(start, end);
+      } else {
+        // For other elements, continue using window.getSelection
+        selectedText = window.getSelection().toString();
+      }
+      if (selectedText !== '') {
+        // Do something with the selected text
+        console.log('Highlight Text:', selectedText);
+        const targetElementName = e.target.name||e.target.id||e.target.nodeName;
+        // targetElementName.split('_');
+        highlightedText.value='Highlight Text:'+ selectedText+ ' from '+ targetElementName;
+      }
+      // Update the session storage
+      // console.log('textArea Text:', textArea.value);
+      // sessionStorage.setItem('storage_notes', textArea.value);
+
     };
 
     const startFocusTime = () => {
@@ -181,15 +265,32 @@ export default {
     const endFocusTime = () => {
       focusTimeEnd = new Date().getTime();
       console.log('Time Spent:', (focusTimeEnd - focusTimeStart) / 1000);
+      highlightedText.value='Focus Time Spent:'+ (focusTimeEnd - focusTimeStart) / 1000
       focusTimeStart = 0;
     };
+
+    document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      console.log('User is focused on the page');
+      // Perform actions when the page is in focus
+       highlightedText.value='User is focused on the page'
+    } else {
+      console.log('User has left the page');
+      // Perform actions when the page is not in focus
+       highlightedText.value='User has left the page'
+    }
+    });
 
 
     return { messages, 
       userInput, 
-      sendMessage,text,
-      highlightedText,
+      textArea,
       handleInput,
+      clearTextArea,
+      textareaRef,
+      sendMessage,
+      highlightedText,
+      handleHighlight,
       handleCopy,
       handlePaste,
       handleMouseUp,
@@ -220,8 +321,9 @@ export default {
 .chat-area {
   flex: 2;
   max-height: calc(100vh - 150px); /* Adjust the value based on your layout */
-  overflow: auto; /* Add this line */
-}
+  position: relative;
+  padding-bottom: 60px !important;
+  }
 
 .message {
   margin-bottom: 20px;
@@ -237,9 +339,14 @@ export default {
   padding: 20px;
 }
 .bar {
-  position: sticky;
+  position: absolute;
   bottom: 0;
+  left: 0;
+  right: 0; /* Add this to make the bar span the entire width */
   z-index: 1;
+}
+.note {
+  margin-top: 20px;
 }
 </style>
 
