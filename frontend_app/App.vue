@@ -15,9 +15,8 @@
                   ref="textareaRef"
                   name="storage_notes"
                   v-model="textArea"
-                  clearable
+                  :autosize="{ minRows: 2, maxRows: 20}"
                   style="width: 100%;"
-                  :rows="16"
                   type="textarea"
                   placeholder="Leave some notes here..."
                   @input="handleInput($event, textArea)"
@@ -34,9 +33,15 @@
                 >
                   <!-- Correctly using the append slot -->
                   <template #append>
-                    <el-button @click="clearTextArea" icon="el-icon-close"></el-button>
+                      <el-button @click="clearTextArea">
+                        reset
+                        <el-icon class="el-input__icon"><delete-filled /></el-icon>
+                      </el-button>
                   </template>
+
                 </el-input>
+
+              <p>Word Count: {{ textAreaWordCount }}</p>
               <p>{{highlightedText}}</p>
             </el-card>
             </el-col>
@@ -97,6 +102,7 @@ export default {
   setup() {
 
     const messages = ref([]);
+    const textAreaWordCount = ref(0);
     const userInput = ref('');
     const textArea = ref('');
     const textareaRef = ref(null); // Add this line to define a ref for the textarea
@@ -110,6 +116,7 @@ export default {
       const storedValue = sessionStorage.getItem('storage_notes');
       if (storedValue) {
         textArea.value = storedValue;
+        textAreaWordCount.value =storedValue.trim().split(/\s+|\n+/).length;
       }
     })
 
@@ -185,6 +192,8 @@ export default {
 
       if (inputValue !== undefined) {
         sessionStorage.setItem('storage_notes', inputValue);
+        console.log('Input Value:', inputValue, inputValue.split(/\s+|\n+/).length);
+        textAreaWordCount.value = inputValue.trim().split(/\s+|\n+/).length;
       }
     };
     const clearTextArea = () => {
@@ -285,6 +294,7 @@ export default {
     return { messages, 
       userInput, 
       textArea,
+      textAreaWordCount,
       handleInput,
       clearTextArea,
       textareaRef,
