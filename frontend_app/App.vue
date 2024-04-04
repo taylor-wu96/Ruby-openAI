@@ -15,7 +15,7 @@
                   ref="textareaRef"
                   name="storage_notes"
                   v-model="textArea"
-                  :autosize="{ minRows: 2, maxRows: 20}"
+                  :autosize="{ minRows: 12, maxRows: 16}"
                   style="width: 100%;"
                   type="textarea"
                   placeholder="Leave some notes here..."
@@ -30,18 +30,14 @@
                   @mouseup="handleMouseUp"
                   @focusin="startFocusTime"
                   @focusout="endFocusTime"
-                >
-                  <!-- Correctly using the append slot -->
-                  <template #append>
-                      <el-button @click="clearTextArea">
-                        reset
-                        <el-icon class="el-input__icon"><delete-filled /></el-icon>
-                      </el-button>
-                  </template>
+                />
+                <div class="text-area_info">
+                  <p>Word Count: {{ textAreaWordCount }}</p>
+                  <el-button size="small" type="danger"  @click="clearTextArea" round >
+                 
+                  Clear  <DeleteFilled  style="width:16px; padding:2px;"/> </el-button>
+                </div>
 
-                </el-input>
-
-              <p>Word Count: {{ textAreaWordCount }}</p>
               <p>{{highlightedText}}</p>
             </el-card>
             </el-col>
@@ -193,13 +189,16 @@ export default {
       if (inputValue !== undefined) {
         sessionStorage.setItem('storage_notes', inputValue);
         console.log('Input Value:', inputValue, inputValue.split(/\s+|\n+/).length);
-        textAreaWordCount.value = inputValue.trim().split(/\s+|\n+/).length;
+        const words = inputValue.trim().split(/\s+|\n+/);
+        // If the trimmed inputValue is empty, set word count to 0, else to the length of the words array
+        textAreaWordCount.value = inputValue.trim() ? words.length : 0;
       }
     };
     const clearTextArea = () => {
       textArea.value = '';
+      textAreaWordCount.value = 0; // Explicitly set word count to 0 here
       sessionStorage.setItem('storage_notes', '');
-      handleInput(null, ''); // Update session storage with an empty string
+      handleInput(null, ''); 
     };
 
 
@@ -357,6 +356,13 @@ export default {
 }
 .note {
   margin-top: 20px;
+  max-height: 100%;
+  overflow: hidden;
+}
+.text-area_info{
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
 }
 </style>
 
