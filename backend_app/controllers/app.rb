@@ -64,6 +64,8 @@ module RubyOpenAI
         Message.where(chat_id:).map(&:values).to_json
       end
 
+      user_id = r.params['user_id'] || 'anonymous'
+
       # frontend api
       r.public
       r.root do
