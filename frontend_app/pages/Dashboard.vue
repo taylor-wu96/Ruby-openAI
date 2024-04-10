@@ -2,8 +2,9 @@
   <div id="app">
     <el-container style="height: 100vh;">
       <el-container class="dashboard" style="height:100%">
-        <el-header>ChatGPT-like Chatbot</el-header>
+        <!-- <el-header>ChatGPT-like Chatbot</el-header> -->
         <el-main>
+          <el-row :gutter="20"> ChatGPT-like Chatbot</el-row>
           <el-row :gutter="20">
             <el-col :span="10" class="task-area cloudy-glass">
               <el-card class="">
@@ -107,10 +108,20 @@ export default {
     const highlightedText=ref('');
     const user_id = ref('anonymous');
     const route = useRoute();
-    console.log('User ID:', route.query.user_id);
-
+   
     watchEffect(() => {
-      sessionStorage.setItem('queryParameters', JSON.stringify(route.query));
+      
+      if(sessionStorage.getItem('user_id')){
+        user_id.value = JSON.parse(sessionStorage.getItem('user_id'));
+         console.log('User ID:', user_id.value);
+      }else{
+        user_id.value = route.query.user_id || 'anonymous';
+        if(user_id.value !== 'anonymous'){
+          sessionStorage.setItem('user_id', JSON.stringify(user_id.value));
+        
+        }
+      }
+    
     });
 
     // console.log('Query Parameters:', route.query);
@@ -134,7 +145,11 @@ export default {
     const initialMessages = async ()=>{
 
       try {
-        const { data } = await axios.get("/messages");
+        let api_url = "/messages";
+        if(user_id.value !== 'anonymous'){
+          api_url = `/messages?user_id=${user_id.value}`;
+        } 
+        const { data } = await axios.get(api_url);
         messages.value = data.map( (chat)=>{
           return {
             id: chat.created_at,
@@ -178,7 +193,11 @@ export default {
         message_content: message,
         system_content: "user",
       };
-      const { data } = await axios.post("/openai", postData);
+        let api_url = "/openai";
+        if(user_id.value !== 'anonymous'){
+          api_url = `/openai?user_id=${user_id.value}`;
+        } 
+      const { data } = await axios.post(api_url, postData);
       console.log(data);
       createMessage(data.response, "assistant");
     }
@@ -196,11 +215,16 @@ export default {
       }
 
       if (inputValue !== undefined) {
+
         sessionStorage.setItem('storage_notes', inputValue);
-        console.log('Input Value:', inputValue, inputValue.split(/\s+|\n+/).length);
+        // console.log('Input Value:', inputValue, inputValue.split(/\s+|\n+/).length);
         const words = inputValue.trim().split(/\s+|\n+/);
+        let previousWordCount = textAreaWordCount.value;
         // If the trimmed inputValue is empty, set word count to 0, else to the length of the words array
         textAreaWordCount.value = inputValue.trim() ? words.length : 0;
+        if (previousWordCount !== textAreaWordCount.value) {
+          console.log('Word Add/Remove:', inputValue);
+        }
       }
     };
     const clearTextArea = () => {
@@ -208,6 +232,7 @@ export default {
       textAreaWordCount.value = 0; // Explicitly set word count to 0 here
       sessionStorage.setItem('storage_notes', '');
       handleInput(null, ''); 
+      highlightedText.value='User Cleared TextBox:'
     };
 
 
