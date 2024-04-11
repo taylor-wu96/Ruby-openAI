@@ -174,6 +174,21 @@ export default {
       }
     };
 
+
+    const sendBehavior= async (behavior)=>{
+      if(behavior){
+        let api_url = "/behavior";
+        if(user_id.value !== 'anonymous'){
+          api_url = `/behavior?user_id=${user_id.value}`;
+        } 
+        const { data } = await axios.post(api_url, behavior);
+        console.log('Response Behavior',data);
+
+      }
+    }
+
+    
+
     //Create a message
     function createMessage(message,identity) {
       let id = 0;
@@ -224,6 +239,13 @@ export default {
         textAreaWordCount.value = inputValue.trim() ? words.length : 0;
         if (previousWordCount !== textAreaWordCount.value) {
           console.log('Word Add/Remove:', inputValue);
+          sendBehavior({
+            id: Date.now(),
+            content: 'User Cleared TextBox',
+            type: 'Word Add/Remove',
+            target_object: 'textarea',
+            log_time: new Date().toISOString(),
+          })  
         }
       }
     };
@@ -232,6 +254,19 @@ export default {
       textAreaWordCount.value = 0; // Explicitly set word count to 0 here
       sessionStorage.setItem('storage_notes', '');
       handleInput(null, ''); 
+      //        id:,
+        // chat_id:,
+        // content:,
+        // type:,
+        // target_object:,
+        // log_time:,
+      sendBehavior({
+        id: Date.now(),
+        content: 'User Cleared TextBox',
+        type: 'Clear',
+        target_object: 'textarea',
+        log_time: new Date().toISOString(),
+      })  
       highlightedText.value='User Cleared TextBox:'
     };
 
@@ -240,6 +275,13 @@ export default {
       console.log(e.clipboardData.getData('text/plain'));
       console.log('Copied Text:', window.getSelection().toString());
       const targetElementName = e.target.name||e.target.id||e.target.nodeName;
+      sendBehavior({
+        id: Date.now(),
+        content: window.getSelection().toString(),
+        type: 'Copy',
+        target_object: targetElementName,
+        log_time: new Date().toISOString(),
+      })
       highlightedText.value='Copied Text:'+window.getSelection().toString()+ ' from '+ targetElementName
     };
 
@@ -247,6 +289,13 @@ export default {
       const pastedText = await e.clipboardData.getData('text');
       console.log('Pasted Text:', pastedText);
       const targetElementName = e.target.name||e.target.id||e.target.nodeName;
+      sendBehavior({
+        id: Date.now(),
+        content: pastedText,
+        type: 'Paste',
+        target_object: targetElementName,
+        log_time: new Date().toISOString(),
+      })
       highlightedText.value='Copied Text:'+ pastedText + ' from '+ targetElementName
     };
 
@@ -265,6 +314,13 @@ export default {
         if (selectedText) {
           console.log('Selected Text:', selectedText);
           const targetElementName = e.target.name||e.target.id||e.target.nodeName;
+          sendBehavior({
+            id: Date.now(),
+            content: selectedText,
+            type: 'HighlightAll',
+            target_object: targetElementName,
+            log_time: new Date().toISOString(),
+          })
           highlightedText.value = 'Selected Text: ' + selectedText + ' from '+ targetElementName;
         } 
       }
@@ -290,6 +346,13 @@ export default {
         console.log('Highlight Text:', selectedText);
         const targetElementName = e.target.name||e.target.id||e.target.nodeName;
         // targetElementName.split('_');
+        sendBehavior({
+          id: Date.now(),
+          content: selectedText,
+          type: 'Highlight',
+          target_object: targetElementName,
+          log_time: new Date().toISOString(),
+        })
         highlightedText.value='Highlight Text:'+ selectedText+ ' from '+ targetElementName;
       }
       // Update the session storage
@@ -308,6 +371,13 @@ export default {
       focusTimeEnd = new Date().getTime();
       console.log('Time Spent:', (focusTimeEnd - focusTimeStart) / 1000);
       highlightedText.value='Focus Time Spent:'+ (focusTimeEnd - focusTimeStart) / 1000
+      sendBehavior({
+        id: Date.now(),
+        content: (focusTimeEnd - focusTimeStart) / 1000,
+        type: 'focus_time',
+        target_object: 'textarea',
+        log_time: new Date(focusTimeEnd).toISOString(),
+      })
       focusTimeStart = 0;
     };
 
@@ -315,11 +385,26 @@ export default {
     if (document.visibilityState === 'visible') {
       console.log('User is focused on the page');
       // Perform actions when the page is in focus
+      sendBehavior({
+            id: Date.now(),
+            content: 'User is focused on the page',
+            type: 'concentration',
+            target_object: 'page',
+            log_time: new Date().toISOString(),
+       })  
        highlightedText.value='User is focused on the page'
+
     } else {
       console.log('User has left the page');
       // Perform actions when the page is not in focus
        highlightedText.value='User has left the page'
+            sendBehavior({
+            id: Date.now(),
+            content: 'User has left the page',
+            type: 'concentration',
+            target_object: 'page',
+            log_time: new Date().toISOString(),
+       })  
     }
     });
 

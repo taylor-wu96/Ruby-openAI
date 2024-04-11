@@ -44,6 +44,7 @@ module RubyOpenAI
         chatbot_message = Message.create(chat_id: new_chat.id, role: 'assistant',
                                          response: response_data['choices'][0]['message']['content'])
         # new_message = Message.create(chat_id: new_chat.id, role: 'user', response: data['message_content'])
+        response.status = 201
         chatbot_message.attributes.to_json
 
         # response_data = ChatGptAPI.send_message(data['system_content'], data['message_content']).to_json
@@ -64,7 +65,28 @@ module RubyOpenAI
         Message.where(chat_id:).map(&:values).to_json
       end
 
-      user_id = r.params['user_id'] || 'anonymous'
+      r.post 'behavior' do
+        user_id = r.params['user_id'] || 'anonymous'
+        data = JSON.parse(r.body.read)
+        new_chat = if Chat.first(user_id:).nil?
+                     Chat.create(user_id:)
+                   else
+                     Chat.first(user_id:)
+                   end
+        user_behavior = Behavior.create(chat_id: new_chat.id, content: data['content'], type: data['type'],
+                                        target_object: data['target_object'], log_time: data['log_time'])
+        response.status = 201
+        user_behavior.attributes.to_json
+      end
+
+      r.get 'behavior_log' do
+        response['Content-Type'] = 'application/json'
+        response.status = 200
+        user_id = r.params['user_id'] || 'anonymous'
+        chat_id = Chat.first(user_id:).id
+
+        Behavior.where(chat_id:).map(&:values).to_json
+      end
 
       # frontend api
       r.public
