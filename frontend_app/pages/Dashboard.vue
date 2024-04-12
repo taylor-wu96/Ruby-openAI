@@ -241,7 +241,7 @@ export default {
           console.log('Word Add/Remove:', inputValue);
           sendBehavior({
             id: Date.now(),
-            content: 'User Cleared TextBox',
+            content: inputValue,
             type: 'Word Add/Remove',
             target_object: 'textarea',
             log_time: new Date().toISOString(),
