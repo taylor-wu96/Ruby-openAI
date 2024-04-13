@@ -45,7 +45,7 @@ module RubyOpenAI
       puts 'test:', JSON.dump(
         {
           'model' => 'gpt-3.5-turbo',
-          'temperature' => 0.3,
+          'temperature' => 0.6,
           'messages' =>
             history_messages.unshift({
                                        'role' => 'system',
@@ -57,7 +57,7 @@ module RubyOpenAI
       JSON.dump(
         {
           'model' => 'gpt-3.5-turbo',
-          'temperature' => 0.3,
+          'temperature' => 0.6,
           'messages' =>
             history_messages.unshift({
                                        'role' => 'system',

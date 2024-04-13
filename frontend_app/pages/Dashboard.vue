@@ -4,22 +4,35 @@
       <el-container class="dashboard" style="height:100%">
         <!-- <el-header>ChatGPT-like Chatbot</el-header> -->
         <el-main>
-          <el-row :gutter="20"> ChatGPT-like Chatbot</el-row>
+          <el-row :gutter="20" class="brand-area">
+            <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px; margin-right: 10px;" /> 
+             <span class="brand-class">
+                 Cohere AI | Your Personal AI Workspace
+              </span> 
+             </el-row>
           <el-row :gutter="20">
             <el-col :span="10" class="task-area cloudy-glass">
-              <el-card class="">
-                Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint quibusdam nemo et asperiores ducimus cum voluptate. Id ipsam at neque a sed? Dicta ducimus illum libero quas, fuga aliquid eum? Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint quibusdam nemo et asperiores ducimus cum voluptate. Id ipsam at neque a sed? Dicta ducimus illum libero quas, fuga aliquid eum?
+              <el-card class="scenario">
+                <div class="scenario-title">
+                  Scenario
+                </div>
+                <div>
+                  Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint quibusdam nemo et asperiores ducimus cum voluptate. Id ipsam at neque a sed? Dicta ducimus illum libero quas, fuga aliquid eum? Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint quibusdam nemo et asperiores ducimus cum voluptate. Id ipsam at neque a sed? Dicta ducimus illum libero quas, fuga aliquid eum?
+                  Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint quibusdam nemo et asperiores ducimus cum voluptate. Id ipsam at neque a sed? Dicta ducimus illum libero quas, fuga aliquid eum? Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint quibusdam nemo et asperiores ducimus cum voluptate. Id ipsam at neque a sed? Dicta ducimus illum libero quas, fuga aliquid eum?
+                </div>
               </el-card>
               <el-card class="note">
-
+                <div class="scenario-title">
+                  Notes
+                </div>
+                <!--  :autosize="{ minRows: 4, maxRows:10}" -->
                 <el-input
                   ref="textareaRef"
                   name="storage_notes"
                   v-model="textArea"
-                  :autosize="{ minRows: 12, maxRows: 16}"
-                  style="width: 100%;"
                   type="textarea"
                   placeholder="Leave some notes here..."
+                  :autosize="{ minRows: 8 , maxRows: 8}"
                   @input="handleInput($event, textArea)"
 
                   @keydown.ctrl.a="handleHighlight"
@@ -33,33 +46,79 @@
                   @focusout="endFocusTime"
                 />
                 <div class="text-area_info">
-                  <p>Word Count: {{ textAreaWordCount }}</p>
+                  <el-text> {{ textAreaWordCount }} / words</el-text>
                   <el-button size="small" type="danger"  @click="clearTextArea" round >
-                 
-                  Clear  <DeleteFilled  style="width:16px; padding:2px;"/> </el-button>
+                  Reset  <DeleteFilled  style="width:20px; padding:2px 0px 2px 4px;"/> </el-button>
                 </div>
+              <el-form :model="form" label-width="auto" >
+                  <div class="submit_block">
+                     <el-form-item label="I have finished the answer">
+                        <el-switch v-model="hasFinishTask" :before-change="checkTaskFinish" :active-icon="Check" :inactive-icon="Close" />
+                      </el-form-item>
+                      <el-form-item>
+                        <el-button  type="info"  :disabled="!hasFinishTask" round @click="onSubmitTask">Submit</el-button>
+                      </el-form-item>
 
-              <p>{{highlightedText}}</p>
+                  </div>
+                 
+              </el-form>
+              <!-- <p>{{highlightedText}}</p> -->
+
             </el-card>
             </el-col>
             <el-col :span="14" class="chat-area cloudy-glass">
               <!-- Chat messages will go here -->
+              <div >
+                  <el-popover
+                    placement="top-start"
+                    title="Task AI"
+                    :width="400"
+                    trigger="hover"
+                    content="Task AI is a chatbot powered by GPT-3. It can help you with various tasks. especially for text-related tasks."
+                  >
+                    <template #reference>
+                       <el-text  size="large" tag="b" class="chat-title">Task AI 
+                  <el-tag size="small" type='info' effect="dark"
+                  round>Powered by GPT</el-tag>   </el-text>  
+                    </template>
+                  </el-popover>
+              </div>
               <el-scrollbar>
                 <div v-for="message in messages" :key="message.id" class="message">
                   <el-card>
-                    <div v-if="message.sender === 'user'" :id="'user_question_block_' + message.id" @mouseup="handleMouseUp" @copy="handleCopy">
-                      <el-tag size="small" :id="'user_question_tag_' + message.id">You</el-tag>
-                      <div :id="'user_question_' + message.id">{{ message.text }}</div>
+                    <div class="dialogue"  v-if="message.sender === 'user'" :id="'user_question_block_' + message.id" @mouseup="handleMouseUp" @copy="handleCopy">
+                      <el-avatar :size="size" :src="circleUrl" />
+                      <div>
+                        <el-tag size="small" :id="'user_question_tag_' + message.id">You</el-tag>
+                        <div :id="'user_question_' + message.id">{{ message.text }}</div>
+                         
+                      </div>
+
                     </div>
-                    <div v-else :id="'ai_feedback_block_' + message.id"   @mouseup="handleMouseUp" @copy="handleCopy">
-                      <el-tag  :id="'ai_feedback_tag_' + message.id" size="small" type="success">Chatbot</el-tag>
-                      <div  :id="'ai_feedback_' + message.id" >{{ message.text }}</div>
+                    <div class="dialogue" v-else :id="'ai_feedback_block_' + message.id"   @mouseup="handleMouseUp" @copy="handleCopy">
+                      <el-avatar class="avatar" :size="size" :src="circleUrl" />
+                      <div>
+                        <el-tag  :id="'ai_feedback_tag_' + message.id" size="small" type="success">Chatbot</el-tag>
+                        <div  :id="'ai_feedback_' + message.id" >{{ message.text }} Lorem ipsum dolor sit amet consectetur adipisicing elit. Iste, cum consequuntur, aspernatur perferendis voluptates accusamus excepturi sint modi ea sed omnis dolorem fugiat culpa iure dolores eum odit nulla vel.</div>
+                        <el-tooltip :id="'icon_' + message.id" placement="bottom">
+                          <template  #content> Copy </template>
+                          <el-button :id="'button_' + message.id" size="small" type="info" plain  @click="handleCopiedButton" round >
+                          <el-icon :id="'button_' + message.id" ><CopyDocument :id="'button_' + message.id" /> </el-icon>
+                        </el-button>
+                        </el-tooltip>
+                        <!-- :id="'icon_' + message.id"  :id="'button_' + message.id" :id="'template_' + message.id" :id="'tooltip_' + message.id" :id="'copy_' + message.id" -->
+
+
+                      </div>
+                     
                     </div>
                   </el-card>
                 </div>
               </el-scrollbar>
               <el-card class="bar">
                 <el-input
+                  id="prompt_input"
+                  class="prompt_input"
                   name="prompt_input"
                   v-model="userInput"
                   placeholder="Type your message here..."
@@ -75,9 +134,10 @@
                   clearable
                 >
                   <template #append>
-                    <el-button type="primary" @click="sendMessage">
-                      Send
-                      <el-icon class="el-icon--right"><ArrowRight /></el-icon>
+                    <el-button class="submit-chatbot" @click="sendMessage">
+                      
+                      <!-- <div class="submit-chatbot-text">Send</div> -->
+                      <Promotion style="width:24px; vertical-align:middle;  padding:0;" />
                     </el-button>
                   </template>
                 </el-input>
@@ -96,12 +156,16 @@ import { ref} from 'vue';
 import { onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { watchEffect } from 'vue';
+import { ElMessage } from 'element-plus'
 
 export default {
   setup() {
 
+    const hasFinishTask = ref(false);
     const messages = ref([]);
     const textAreaWordCount = ref(0);
+    const minWords = 160;
+    const maxWords = 300;
     const userInput = ref('');
     const textArea = ref('');
     const textareaRef = ref(null); // Add this line to define a ref for the textarea
@@ -140,8 +204,28 @@ export default {
     onUnmounted(() => {
       document.removeEventListener('keydown', handleHighlight);
     });
+
+    // Error Prevention
+    const checkTaskFinish= () => {
+      if(textAreaWordCount.value>minWords && textAreaWordCount.value<maxWords){
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            ElMessage.success('Switch success')
+            return resolve(true)
+          }, 100)
+        })
+      }else{
+        // console.log('Task Not Finished:', value);
+          return new Promise((_, reject) => {
+            setTimeout(() => {
+              ElMessage.error(`Task not finished. Please write between ${minWords} and ${maxWords}  words.`)
+              return reject(new Error('Error'))
+            }, 100)
+          })
+      }
+    }
     
-    
+    // API related
     const initialMessages = async ()=>{
 
       try {
@@ -268,6 +352,30 @@ export default {
         log_time: new Date().toISOString(),
       })  
       highlightedText.value='User Cleared TextBox:'
+    };
+
+    const handleCopiedButton = (e) => {
+      // console.log(e.target);
+      let targetElement = e.target;
+      if(!targetElement.id){
+        targetElement = e.target.parentElement;
+      }
+      // console.log(targetElement.id);
+      const messageId = targetElement.id.split('_')[1]; // Extract the message ID from the parent element's ID
+      const aiResponseElement = document.getElementById(`ai_feedback_${messageId}`);
+      console.log('Response element:', aiResponseElement);
+      const copiedText = aiResponseElement.textContent;
+      console.log('Copied Text:', copiedText);
+
+      console.log('Copied Button');
+      sendBehavior({
+        id: Date.now(),
+        content: copiedText,
+        type: 'Copy',
+        target_object: aiResponseElement.name||aiResponseElement.id||aiResponseElement.nodeName,
+        log_time: new Date().toISOString(),
+      })
+      highlightedText.value='Copied from Button: '+copiedText
     };
 
 
@@ -413,7 +521,9 @@ export default {
       userInput, 
       textArea,
       textAreaWordCount,
+      checkTaskFinish,
       handleInput,
+      handleCopiedButton, 
       clearTextArea,
       textareaRef,
       sendMessage,
@@ -423,34 +533,51 @@ export default {
       handlePaste,
       handleMouseUp,
       startFocusTime,
+      hasFinishTask,
       endFocusTime, };
   },
 };
 </script>
 
 <style scoped>
-/* Add your styles here */
+/* Add your styles here scoped */
 
 .chat-area,
 .task-area {
-  margin: 20px;
+  margin: 10px 10px;
+  max-height: calc(100vh - 100px); /* Adjust the value based on your layout */
+  height:calc(100vh - 100px) ;
+}
+.brand-area{
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  
+}
+.brand-class{
+  font-weight: bold;
+  font-size: 1.25rem;
 }
 
 .dashboard {
   display: flex;
   flex-direction: row; /* Change flex-direction to row */
+  flex: 1; /* Added */
+  height: 100%; /* Added */
 }
 
 .task-area {
+  display: flex; /* Added */
+  flex-direction: column; /* Added */
   flex: 1; /* Take up remaining space */
   padding-right: 20px; /* Add some spacing between columns */
 }
 
 .chat-area {
   flex: 2;
-  max-height: calc(100vh - 150px); /* Adjust the value based on your layout */
+ 
   position: relative;
-  padding-bottom: 60px !important;
+  padding-bottom: 120px !important;
   }
 
 .message {
@@ -458,7 +585,7 @@ export default {
 }
 
 .cloudy-glass {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.45);
   box-shadow: 0 4px 2px 0 rgba(31, 38, 135, 0.15);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -473,15 +600,132 @@ export default {
   right: 0; /* Add this to make the bar span the entire width */
   z-index: 1;
 }
+.scenario,
 .note {
-  margin-top: 20px;
-  max-height: 100%;
-  overflow: hidden;
+  /* margin-top: 20px; */
+  /* max-height: 100%; */
+  max-height: 49%;
+  min-height: 49%;
+  /* height: calc(50%-5px); */
+  overflow: scroll;
+  flex: 1; /* Added */
+}
+.note{
+  margin-top: 10px;
+
 }
 .text-area_info{
   display: flex;
-  justify-content: space-between;
-  margin-top: 4px;
+  align-items: center;
+  gap: 20px;
+  /* justify-content: space-between; */
+  margin-top: 8px;
 }
+.chat-title{
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.bar>>>.el-input{
+  width: 100%;
+  border-radius: 25px;
+  background: #E9EEF6 ;
+  padding: 8px 16px ;
+
+}
+
+.bar>>>.el-input__wrapper,
+.bar>>>.el-input-group__append
+
+ {
+  /* width: 100%; */
+  border-radius: 0;
+  font-size: 1rem;
+  /* border-radius: 100px !important ; */
+  /* border: 4px solid #dcdfe6; */
+  box-shadow: none;
+  background: transparent;
+  line-height: 4;
+  padding: 4px 8px;
+  color: #5F6367;
+  /* background-color: #ffffff; */
+
+}
+
+
+
+.bar>>>.el-input-group__append{
+  background: #1b1b1b;
+  color: #ffffff;
+  border-radius: 16px ;
+  padding: 0px 12px 8px 12px;
+  
+  vertical-align: middle;
+  /* border: 2px #6b8ea2 solid; */
+  /* font-size: 0.8rem; */
+}
+.bar>>>.el-input-group__append>span {
+ display: flex !important;
+ align-items: center;
+ justify-content: center;
+}
+.note>>>.el-textarea{
+  height: 100%;
+
+}
+.note>>>.el-textarea__inner{
+  border-radius: 10px;
+  border: none;
+  background: #E9EEF6;
+  padding: 10px;
+  resize: none;
+  display: block;
+  height: 100%;
+  min-height: 100% !important;
+  /* max-height: 100%; */
+}
+.bar{
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+ 
+
+}
+
+.task-area>>>.el-card,
+.chat-area>>>.el-card{
+  background: #ffffff;
+  box-shadow: none;
+  border: none;
+  border-radius: 10px;
+}
+
+
+.dialogue{
+  display: flex;
+  align-items: start;
+  gap: 12px;
+}
+
+.avatar{
+  flex-shrink: 0;
+}
+
+.scenario-title{
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.submit_block{
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
 </style>
 
