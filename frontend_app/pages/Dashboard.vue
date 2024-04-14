@@ -11,7 +11,8 @@
               </span> 
              </el-row>
           <el-row :gutter="20">
-            <el-col :span="10" class="task-area cloudy-glass">
+            <!-- :span="10" :span="14" -->
+            <el-col   :xs="24" :sm="24" :md="24" :lg="12" :xl="10" class="task-area cloudy-glass">
               <el-card class="scenario">
                 <div class="scenario-title">
                   Scenario
@@ -66,7 +67,7 @@
 
             </el-card>
             </el-col>
-            <el-col :span="14" class="chat-area cloudy-glass">
+            <el-col  :xs="22" :sm="22" :md="22" :lg="12" :xl="14" class="chat-area cloudy-glass invisible">
               <!-- Chat messages will go here -->
               <div >
                   <el-popover
@@ -83,6 +84,75 @@
                     </template>
                   </el-popover>
               </div>
+              <el-scrollbar>
+                <div v-for="message in messages" :key="message.id" class="message">
+                  <el-card>
+                    <div class="dialogue"  v-if="message.sender === 'user'" :id="'user_question_block_' + message.id" @mouseup="handleMouseUp" @copy="handleCopy">
+                      <el-avatar :size="size" :src="circleUrl" />
+                      <div>
+                        <el-tag size="small" :id="'user_question_tag_' + message.id">You</el-tag>
+                        <div :id="'user_question_' + message.id">{{ message.text }}</div>
+                         
+                      </div>
+
+                    </div>
+                    <div class="dialogue" v-else :id="'ai_feedback_block_' + message.id"   @mouseup="handleMouseUp" @copy="handleCopy">
+                      <el-avatar class="avatar" :size="size" :src="circleUrl" />
+                      <div>
+                        <el-tag  :id="'ai_feedback_tag_' + message.id" size="small" type="success">Chatbot</el-tag>
+                        <div  :id="'ai_feedback_' + message.id" >{{ message.text }}</div>
+                        <el-tooltip :id="'icon_' + message.id" placement="bottom">
+                          <template  #content> Copy </template>
+                          <el-button :id="'button_' + message.id" size="small" type="info" plain  @click="handleCopiedButton" round >
+                          <el-icon :id="'button_' + message.id" ><CopyDocument :id="'button_' + message.id" /> </el-icon>
+                        </el-button>
+                        </el-tooltip>
+                        <!-- :id="'icon_' + message.id"  :id="'button_' + message.id" :id="'template_' + message.id" :id="'tooltip_' + message.id" :id="'copy_' + message.id" -->
+
+
+                      </div>
+                     
+                    </div>
+                  </el-card>
+                </div>
+              </el-scrollbar>
+              <el-card class="bar">
+                <el-input
+                  id="prompt_input"
+                  class="prompt_input"
+                  name="prompt_input"
+                  v-model="userInput"
+                  placeholder="Type your message here..."
+                  @keyup.enter="sendMessage"
+                  @keydown.ctrl.a="handleHighlight"
+                  @keydown.meta.a="handleHighlight"
+                  @copy="handleCopy"
+                  @cut="handleCopy"
+                  @paste="handlePaste"
+                  @mouseup="handleMouseUp"
+                  @focusin="startFocusTime"
+                  @focusout="endFocusTime"
+                  clearable
+                >
+                  <template #append>
+                    <el-button class="submit-chatbot" @click="sendMessage">
+                      
+                      <!-- <div class="submit-chatbot-text">Send</div> -->
+                      <Promotion style="width:24px; vertical-align:middle;  padding:0;" />
+                    </el-button>
+                  </template>
+                </el-input>
+              </el-card>
+            </el-col>
+          </el-row>
+        </el-main>
+
+        <el-button class="mobile-drawer "  style="margin-left: 16px" @click="drawer = true">
+            <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px;" /> 
+        </el-button>
+
+        <el-drawer class="inner-drawer" v-model="drawer" size="80%" title="Task AI" >
+           <div class="chat-area cloudy-glass">
               <el-scrollbar>
                 <div v-for="message in messages" :key="message.id" class="message">
                   <el-card>
@@ -135,16 +205,13 @@
                 >
                   <template #append>
                     <el-button class="submit-chatbot" @click="sendMessage">
-                      
-                      <!-- <div class="submit-chatbot-text">Send</div> -->
                       <Promotion style="width:24px; vertical-align:middle;  padding:0;" />
                     </el-button>
                   </template>
                 </el-input>
               </el-card>
-            </el-col>
-          </el-row>
-        </el-main>
+            </div>
+        </el-drawer>
       </el-container>
     </el-container>
   </div>
@@ -161,6 +228,7 @@ import { ElMessage } from 'element-plus'
 export default {
   setup() {
 
+    const drawer = ref(false)
     const hasFinishTask = ref(false);
     const messages = ref([]);
     const textAreaWordCount = ref(0);
@@ -570,7 +638,8 @@ export default {
       handleMouseUp,
       startFocusTime,
       hasFinishTask,
-      endFocusTime, };
+      endFocusTime,
+      drawer, };
   },
 };
 </script>
@@ -762,6 +831,43 @@ export default {
   align-items: center;
 }
 
+.mobile-drawer{
+  position: fixed;
+  display: flex;
+  width: 50px;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  right: 30px;
+  bottom: 30px;
+  z-index: 1000;
+  box-shadow: #5F6367 0px 0px 10px 0px;
+  padding: 10px;
+  border: none;
+  border-radius: 50%;
+  background: #1b1b1b;
+  transition: all 0.3s;
+}
+.mobile-drawer>span{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inner-drawer{
+  background-color: rgb(158, 158, 158) !important;
+}
+@media (min-width:992px) {
+  .mobile-drawer{
+    display: none;
+  }
+}
+@media (max-width:992px) {
+  .invisible{
+    display: none !important;
+  }
+}
 
 
 </style>
