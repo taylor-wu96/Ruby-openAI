@@ -12,7 +12,8 @@ module RubyOpenAI
     plugin :render
     plugin :halt
     # plugin :default_headers
-
+    PRACTICAL_TASK = 'practical'
+    CREATVIE_TASK = 'creative'
     route do |r|
       r.get 'api' do
         response['Content-Type'] = 'application/json'
@@ -86,6 +87,55 @@ module RubyOpenAI
         chat_id = Chat.first(user_id:).id
 
         Behavior.where(chat_id:).map(&:values).to_json
+      end
+
+      r.get 'random-task' do
+        print Task.all
+        # print Task.all.map(:task_name)
+        response['Content-Type'] = 'application/json'
+        response.status = 200
+        user_id = r.params['user_id'] || 'anonymous'
+        new_chat = if Chat.first(user_id:).nil?
+                     Chat.create(user_id:)
+                   else
+                     Chat.first(user_id:)
+                   end
+        unless Task.where(chat_id: new_chat.id).empty?
+          task = Task.where(chat_id: new_chat.id).first
+          return task.attributes.to_json
+        end
+        if Task.all.empty?
+          task = Task.create(task_name: CREATVIE_TASK, chat_id: new_chat.id)
+          return task.attributes.to_json
+        else
+          numOfPracticalTask = Task.all.map(&:task_name).count(PRACTICAL_TASK)
+          numOfCreativeTask = Task.all.map(&:task_name).count(CREATVIE_TASK)
+
+          if numOfPracticalTask >= numOfCreativeTask
+            task = Task.create(task_name: CREATVIE_TASK, chat_id: new_chat.id)
+            return task.attributes.to_json
+          else
+            task = Task.create(task_name: PRACTICAL_TASK, chat_id: new_chat.id)
+            return task.attributes.to_json
+          end
+        end
+
+        # response['Content-Type'] = 'application/json'
+        # response.status = 200
+        # { success: true, message: 'Welcome to ruby openAI world' }.to_json
+      end
+
+      r.get 'task-to-csv' do
+        # response['Content-Type'] = 'application/json'
+        data = Task.all.map(&:values)
+        headers = data.first.keys.map(&:to_s)
+
+        content = [headers.to_csv] + data.map { |row| row.values.to_csv }
+        File.write('./export.csv', content.join)
+
+        response['Content-Type'] = 'text/csv'
+        response.status = 200
+        content.join
       end
 
       # frontend api

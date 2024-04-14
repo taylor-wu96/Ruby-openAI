@@ -5,13 +5,12 @@
 require 'sequel'
 
 module RubyOpenAI
-  class Chat < Sequel::Model
+  class Task < Sequel::Model
     # validation for the model
     plugin :validation_helpers
     plugin :timestamps, update_on_create: true
-    many_to_one :message, class: :'RubyOpenAI::Message'
-    many_to_one :behavior, class: :'RubyOpenAI::Behavior'
-    one_to_one :task, class: :'RubyOpenAI::Task'
+
+    one_to_one :chat, class: :'RubyOpenAI::Chat'
 
     # def validate
     #   super
@@ -21,7 +20,9 @@ module RubyOpenAI
     def attributes
       {
         id:,
-        user_id:
+        chat_id:,
+        task_name:,
+        final_submission:
       }
     end
   end

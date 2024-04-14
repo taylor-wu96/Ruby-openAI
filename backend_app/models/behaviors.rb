@@ -25,7 +25,7 @@ module RubyOpenAI
         content:,
         type:,
         target_object:,
-        log_time:,
+        log_time:
       }
     end
   end

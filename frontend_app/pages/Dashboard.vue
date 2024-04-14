@@ -19,9 +19,7 @@
                 <div class="scenario-title">
                   Scenario
                 </div>
-                <div>
-                  Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint quibusdam nemo et asperiores ducimus cum voluptate. Id ipsam at neque a sed? Dicta ducimus illum libero quas, fuga aliquid eum? Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint quibusdam nemo et asperiores ducimus cum voluptate. Id ipsam at neque a sed? Dicta ducimus illum libero quas, fuga aliquid eum?
-                  Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint quibusdam nemo et asperiores ducimus cum voluptate. Id ipsam at neque a sed? Dicta ducimus illum libero quas, fuga aliquid eum? Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint quibusdam nemo et asperiores ducimus cum voluptate. Id ipsam at neque a sed? Dicta ducimus illum libero quas, fuga aliquid eum?
+                <div  v-html="scenarioText">
                 </div>
               </el-card>
               <el-card ref="noteRef" class="note">
@@ -285,6 +283,7 @@
 </template>
 
 <script>
+import Constants from "../constant/Constants.vue";
 import axios from "axios";
 import { ref} from 'vue';
 import { onMounted, onUnmounted } from 'vue';
@@ -300,6 +299,7 @@ export default {
     const hasFinishTask = ref(false);
     const messages = ref([]);
     const textAreaWordCount = ref(0);
+    const scenarioText = ref('');
     const minWords = 160;
     const maxWords = 300;
     const userInput = ref('');
@@ -348,6 +348,7 @@ export default {
         textArea.value = storedValue;
         textAreaWordCount.value =storedValue.trim().split(/\s+|\n+/).length;
       }
+      getTask();
     })
 
     // Don't forget to clean up the event listener on component unmount
@@ -436,6 +437,26 @@ export default {
     }
   }
 }
+  const getTask = async () => {
+    try {
+      let api_url = "/random-task";
+      if(user_id.value !== 'anonymous'){
+        api_url = `/random-task?user_id=${user_id.value}`;
+      } 
+      const { data } = await axios.get(api_url);
+      console.log('Task:', data);
+      console.log('Task:', data.task_name);
+      if(data.task_name==='creative'){
+        // createMessage(data.task_name, "assistant");
+        scenarioText.value = Constants.CREATIVE;
+      }
+      else{
+        scenarioText.value = Constants.PRACTICAL;
+      }
+    } catch (error) {
+      console.error('Failed to fetch task:', error);
+    }
+  }
 
     
 
@@ -504,12 +525,6 @@ export default {
       textAreaWordCount.value = 0; // Explicitly set word count to 0 here
       sessionStorage.setItem('storage_notes', '');
       handleInput(null, ''); 
-      //        id:,
-        // chat_id:,
-        // content:,
-        // type:,
-        // target_object:,
-        // log_time:,
       sendBehavior({
         id: Date.now(),
         content: 'User Cleared TextBox',
@@ -548,8 +563,6 @@ export default {
       tempInput.select();
       document.execCommand('copy');
       document.body.removeChild(tempInput);
-
-      // e.clipboardData.getData('text/plain')
 
       highlightedText.value='Copied from Button: '+copiedText
     };
@@ -699,7 +712,6 @@ export default {
       else{
         mobileDrawer.value = false;
       }
-    //  console.log("Window width:", window.innerWidth); 
     })
 
     const onSubmitTask = async () => {
@@ -723,7 +735,7 @@ export default {
       chatInputRef,
       infoRef,
       open,
-      
+      scenarioText,
       textArea,
       textAreaWordCount,
       checkTaskFinish,
