@@ -259,17 +259,33 @@ export default {
     };
 
 
-    const sendBehavior= async (behavior)=>{
-      if(behavior){
-        let api_url = "/behavior";
-        if(user_id.value !== 'anonymous'){
-          api_url = `/behavior?user_id=${user_id.value}`;
-        } 
-        const { data } = await axios.post(api_url, behavior);
-        console.log('Response Behavior',data);
+    // const sendBehavior= async (behavior)=>{
+    //   if(behavior){
+    //     let api_url = "/behavior";
+    //     if(user_id.value !== 'anonymous'){
+    //       api_url = `/behavior?user_id=${user_id.value}`;
+    //     } 
+    //     const { data } = await axios.post(api_url, behavior);
+    //     console.log('Response Behavior',data);
 
-      }
+    //   }
+    // }
+
+  const sendBehavior = async (behavior) => {
+  if (behavior) {
+    let api_url = "/behavior";
+    if (user_id.value !== 'anonymous') {
+      api_url = `/behavior?user_id=${user_id.value}`;
     }
+    try {
+      const { data } = await axios.post(api_url, behavior);
+      console.log('Response Behavior', data);
+    } catch (error) {
+      console.error('Failed to send behavior:', error);
+      // Handle specific error scenarios here if needed
+    }
+  }
+}
 
     
 
@@ -302,7 +318,7 @@ export default {
     }
 
 
-    // Todo event listeners
+    // Event listeners
     let focusTimeStart = 0;
     let focusTimeEnd = 0;
     const handleInput = (e, value) => {
@@ -354,7 +370,7 @@ export default {
       highlightedText.value='User Cleared TextBox:'
     };
 
-    const handleCopiedButton = (e) => {
+    const handleCopiedButton = async(e) => {
       // console.log(e.target);
       let targetElement = e.target;
       if(!targetElement.id){
@@ -375,6 +391,16 @@ export default {
         target_object: aiResponseElement.name||aiResponseElement.id||aiResponseElement.nodeName,
         log_time: new Date().toISOString(),
       })
+
+      const tempInput = document.createElement('textarea');
+      tempInput.value = copiedText;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+
+      // e.clipboardData.getData('text/plain')
+
       highlightedText.value='Copied from Button: '+copiedText
     };
 
@@ -433,8 +459,6 @@ export default {
         } 
       }
     };
-
-
 
     const handleMouseUp = (e) => {
       console.log('Mouse Up');
@@ -515,13 +539,25 @@ export default {
        })  
     }
     });
-
+    
+    const onSubmitTask = async () => {
+      console.log('Task Submitted:', textArea.value);
+      sendBehavior({
+        id: Date.now(),
+        content: textArea.value,
+        type: 'Task Submission',
+        target_object: 'textarea',
+        log_time: new Date().toISOString(),
+      })
+      highlightedText.value='Task Submitted:'+ textArea.value
+    };
 
     return { messages, 
       userInput, 
       textArea,
       textAreaWordCount,
       checkTaskFinish,
+      onSubmitTask,
       handleInput,
       handleCopiedButton, 
       clearTextArea,
@@ -725,6 +761,7 @@ export default {
   justify-content: space-between;
   align-items: center;
 }
+
 
 
 </style>
