@@ -69,7 +69,7 @@
 
             </el-card>
             </el-col>
-            <el-col ref="chatBotRef"  :xs="22" :sm="22" :md="22" :lg="12" :xl="14" class="chat-area cloudy-glass invisible">
+            <el-col v-if="!mobileDrawer" ref="chatBotRef"  :xs="22" :sm="22" :md="22" :lg="12" :xl="14" class="chat-area cloudy-glass invisible">
               <!-- Chat messages will go here -->
               <div >
                   <el-popover
@@ -149,7 +149,7 @@
           </el-row>
         </el-main>
         <!-- Drawer Code For  Mobile -->
-        <el-button class="mobile-drawer"  style="margin-left: 16px" @click="drawer = true">
+        <el-button v-if="mobileDrawer" ref="chatBotRef" class="mobile-drawer"  style="margin-left: 16px" @click="drawer = true">
             <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px;" /> 
         </el-button>
 
@@ -187,7 +187,7 @@
                   </el-card>
                 </div>
               </el-scrollbar>
-              <el-card class="bar">
+              <el-card  ref="chatInputRef"  class="bar">
                 <el-input
                   id="prompt_input"
                   class="prompt_input"
@@ -318,7 +318,7 @@ export default {
     const chatBotRef = ref(null)
     const submitTaskRef = ref(null)
     const infoRef = ref(null)
-
+    const mobileDrawer = ref(window.innerWidth<992?true:false)
 
     const open = ref(true)
 
@@ -690,6 +690,18 @@ export default {
     }
     });
     
+    window.addEventListener('resize', () => {
+      if(window.innerWidth<992){
+        console.log("Window width:", window.innerWidth); 
+        console.log('Mobile View');
+        mobileDrawer.value = true;
+      }
+      else{
+        mobileDrawer.value = false;
+      }
+    //  console.log("Window width:", window.innerWidth); 
+    })
+
     const onSubmitTask = async () => {
       console.log('Task Submitted:', textArea.value);
       sendBehavior({
@@ -711,6 +723,7 @@ export default {
       chatInputRef,
       infoRef,
       open,
+      
       textArea,
       textAreaWordCount,
       checkTaskFinish,
@@ -728,7 +741,8 @@ export default {
       startFocusTime,
       hasFinishTask,
       endFocusTime,
-      drawer, };
+      drawer,
+      mobileDrawer, };
   },
 };
 </script>
