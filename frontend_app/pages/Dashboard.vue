@@ -6,14 +6,16 @@
         <el-main>
           <el-row :gutter="20" class="brand-area">
             <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px; margin-right: 10px;" /> 
-             <span class="brand-class">
-                 Cohere AI | Your Personal AI Workspace
-              </span> 
+            <span class="brand-class">
+              Cohere AI | Your Personal AI Workspace
+            </span> 
+            <el-button style="margin-left:4px;" ref="infoRef" size="small" circle type="info" icon="InfoFilled" @click="open = true">
+            </el-button>
              </el-row>
-          <el-row :gutter="20">
+          <el-row  :gutter="20">
             <!-- :span="10" :span="14" -->
-            <el-col   :xs="24" :sm="24" :md="24" :lg="12" :xl="10" class="task-area cloudy-glass">
-              <el-card class="scenario">
+            <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="10" class="task-area cloudy-glass">
+              <el-card ref="scenarioRef" class="scenario">
                 <div class="scenario-title">
                   Scenario
                 </div>
@@ -22,7 +24,7 @@
                   Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint quibusdam nemo et asperiores ducimus cum voluptate. Id ipsam at neque a sed? Dicta ducimus illum libero quas, fuga aliquid eum? Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint quibusdam nemo et asperiores ducimus cum voluptate. Id ipsam at neque a sed? Dicta ducimus illum libero quas, fuga aliquid eum?
                 </div>
               </el-card>
-              <el-card class="note">
+              <el-card ref="noteRef" class="note">
                 <div class="scenario-title">
                   Notes
                 </div>
@@ -51,7 +53,7 @@
                   <el-button size="small" type="danger"  @click="clearTextArea" round >
                   Reset  <DeleteFilled  style="width:20px; padding:2px 0px 2px 4px;"/> </el-button>
                 </div>
-              <el-form :model="form" label-width="auto" >
+              <el-form ref="submitTaskRef" :model="form" label-width="auto" >
                   <div class="submit_block">
                      <el-form-item label="I have finished the answer">
                         <el-switch v-model="hasFinishTask" :before-change="checkTaskFinish" :active-icon="Check" :inactive-icon="Close" />
@@ -67,7 +69,7 @@
 
             </el-card>
             </el-col>
-            <el-col  :xs="22" :sm="22" :md="22" :lg="12" :xl="14" class="chat-area cloudy-glass invisible">
+            <el-col ref="chatBotRef"  :xs="22" :sm="22" :md="22" :lg="12" :xl="14" class="chat-area cloudy-glass invisible">
               <!-- Chat messages will go here -->
               <div >
                   <el-popover
@@ -96,7 +98,7 @@
                       </div>
 
                     </div>
-                    <div class="dialogue" v-else :id="'ai_feedback_block_' + message.id"   @mouseup="handleMouseUp" @copy="handleCopy">
+                    <div  class="dialogue" v-else :id="'ai_feedback_block_' + message.id"   @mouseup="handleMouseUp" @copy="handleCopy">
                       <el-avatar class="avatar" :size="size" :src="circleUrl" />
                       <div>
                         <el-tag  :id="'ai_feedback_tag_' + message.id" size="small" type="success">Chatbot</el-tag>
@@ -116,7 +118,7 @@
                   </el-card>
                 </div>
               </el-scrollbar>
-              <el-card class="bar">
+              <el-card ref="chatInputRef" class="bar">
                 <el-input
                   id="prompt_input"
                   class="prompt_input"
@@ -146,8 +148,8 @@
             </el-col>
           </el-row>
         </el-main>
-
-        <el-button class="mobile-drawer "  style="margin-left: 16px" @click="drawer = true">
+        <!-- Drawer Code For  Mobile -->
+        <el-button class="mobile-drawer"  style="margin-left: 16px" @click="drawer = true">
             <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px;" /> 
         </el-button>
 
@@ -212,6 +214,71 @@
               </el-card>
             </div>
         </el-drawer>
+
+        <!-- Tour Code -->
+      
+
+
+        <el-tour mask v-model="open" type="primary" >
+          <!-- <el-tour-step
+            :target="ref1?.$el"
+            title="Upload File"
+            description="Put you files here."
+          />
+          <el-tour-step
+            :target="ref2?.$el"
+            title="Save"
+            description="Save your changes"
+          />
+          <el-tour-step
+            :target="ref3?.$el"
+            title="Other Actions"
+            description="Click to see other"
+          /> -->
+          <!-- scenarioRef,
+          noteRef,
+          chatBotRef,
+          submitTask,
+          infoRef, -->
+          <el-tour-step title="Introduction">
+            <h1>About this experiment:</h1>
+            <div>This experiment is want to know how will you finish the task. you have the right use the chatbot. it is same as the gpt you use</div>
+          </el-tour-step>
+          <el-tour-step
+            :target="scenarioRef?.$el"
+            title="Scenario Block"
+            description="In this part, you will see the scenario of the task. you should follow the instructions to finish the task."
+          />
+          <el-tour-step
+            :target="noteRef?.$el"
+            title="Note Block"
+            description="You can keep all of your note and task here before submission. you can see the word count below the text area."
+
+          />
+          <el-tour-step
+            placement="left"
+            :target="chatBotRef?.$el"
+            title="Task AI Block"
+            description="This the normal llm chatbot you can use. you can ask any question to the chatbot help you finish the task. Need to scroll down to see the latest message."
+          />
+          <el-tour-step
+            :target="chatInputRef?.$el"
+            title="chatInputRef"
+            description="Type the question here and click the send button to send the message to the chatbot."
+          />
+          <el-tour-step
+            :target="submitTaskRef?.$el"
+            title="Submit Task"
+            description="After you finish the task, you should turn on the toggle I have finished the answer, you can click the submit button to submit the task."
+          />
+
+          <el-tour-step
+            :target="infoRef?.$el"
+            title="Want to see the tour again?"
+            description="Just click this button to see the tour again."
+          />
+        </el-tour>
+
       </el-container>
     </el-container>
   </div>
@@ -224,6 +291,7 @@ import { onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { watchEffect } from 'vue';
 import { ElMessage } from 'element-plus'
+
 
 export default {
   setup() {
@@ -240,6 +308,20 @@ export default {
     const highlightedText=ref('');
     const user_id = ref('anonymous');
     const route = useRoute();
+
+    //  test for tour
+    const chatInputRef = ref(null)
+    // const ref2 = ref(null)
+    // const ref3 = ref(null)
+    const scenarioRef = ref(null)
+    const noteRef = ref(null)
+    const chatBotRef = ref(null)
+    const submitTaskRef = ref(null)
+    const infoRef = ref(null)
+
+
+    const open = ref(true)
+
    
     watchEffect(() => {
       
@@ -622,6 +704,13 @@ export default {
 
     return { messages, 
       userInput, 
+      scenarioRef,
+      noteRef,
+      chatBotRef,
+      submitTaskRef,
+      chatInputRef,
+      infoRef,
+      open,
       textArea,
       textAreaWordCount,
       checkTaskFinish,
