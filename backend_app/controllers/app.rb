@@ -90,7 +90,7 @@ module RubyOpenAI
       end
 
       r.get 'random-task' do
-        print Task.all
+        # print Task.all
         # print Task.all.map(:task_name)
         response['Content-Type'] = 'application/json'
         response.status = 200
@@ -119,10 +119,20 @@ module RubyOpenAI
             return task.attributes.to_json
           end
         end
-
-        # response['Content-Type'] = 'application/json'
-        # response.status = 200
-        # { success: true, message: 'Welcome to ruby openAI world' }.to_json
+      end
+      r.post 'task' do
+        response['Content-Type'] = 'application/json'
+        response.status = 200
+        user_id = r.params['user_id'] || 'anonymous'
+        new_chat = if Chat.first(user_id:).nil?
+                     Chat.create(user_id:)
+                   else
+                     Chat.first(user_id:)
+                   end
+        unless Task.where(chat_id: new_chat.id).empty?
+          task = Task.where(chat_id: new_chat.id).first
+          return task.attributes.to_json
+        end
       end
 
       r.get 'task-to-csv' do

@@ -92,7 +92,6 @@
                       <div>
                         <el-tag size="small" :id="'user_question_tag_' + message.id">You</el-tag>
                         <div :id="'user_question_' + message.id">{{ message.text }}</div>
-                         
                       </div>
 
                     </div>
@@ -107,9 +106,13 @@
                           <el-icon :id="'button_' + message.id" ><CopyDocument :id="'button_' + message.id" /> </el-icon>
                         </el-button>
                         </el-tooltip>
-                        <!-- :id="'icon_' + message.id"  :id="'button_' + message.id" :id="'template_' + message.id" :id="'tooltip_' + message.id" :id="'copy_' + message.id" -->
 
-
+                        <el-button>
+                          Retry
+                        </el-button>
+                        <el-button>
+                          Retry
+                        </el-button>
                       </div>
                      
                     </div>
@@ -214,30 +217,8 @@
         </el-drawer>
 
         <!-- Tour Code -->
-      
-
 
         <el-tour mask v-model="open" type="primary" >
-          <!-- <el-tour-step
-            :target="ref1?.$el"
-            title="Upload File"
-            description="Put you files here."
-          />
-          <el-tour-step
-            :target="ref2?.$el"
-            title="Save"
-            description="Save your changes"
-          />
-          <el-tour-step
-            :target="ref3?.$el"
-            title="Other Actions"
-            description="Click to see other"
-          /> -->
-          <!-- scenarioRef,
-          noteRef,
-          chatBotRef,
-          submitTask,
-          infoRef, -->
           <el-tour-step title="Introduction">
             <h1>About this experiment:</h1>
             <div>This experiment is want to know how will you finish the task. you have the right use the chatbot. it is same as the gpt you use</div>
@@ -308,6 +289,7 @@ export default {
     const highlightedText=ref('');
     const user_id = ref('anonymous');
     const route = useRoute();
+    const temp=ref(Constants.DEFAULTS_TEMP)
 
     //  test for tour
     const chatInputRef = ref(null)
