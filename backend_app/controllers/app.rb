@@ -127,15 +127,72 @@ module RubyOpenAI
 
       r.get 'task-to-csv' do
         # response['Content-Type'] = 'application/json'
-        data = Task.all.map(&:values)
-        headers = data.first.keys.map(&:to_s)
+        user_id = r.params['user_id'] || 'anonymous'
+        if user_id == 'all'
+          data = Task.all.map(&:values)
+          headers = data.first.keys.map(&:to_s)
+          content = [headers.to_csv] + data.map { |row| row.values.to_csv }
+          # File.write('./export.csv', content.join)
+          return content.join
+        end
+        unless Chat.first(user_id:).nil?
+          chat_id = Chat.first(user_id:).id
+          data = Task.where(chat_id:).map(&:values)
+          headers = data.first.keys.map(&:to_s)
+          content = [headers.to_csv] + data.map { |row| row.values.to_csv }
+          # File.write('./export.csv', content.join)
+          return content.join
+        end
 
-        content = [headers.to_csv] + data.map { |row| row.values.to_csv }
-        File.write('./export.csv', content.join)
+        'No data' if Chat.first(user_id:).nil? # return no data
+      end
 
+      r.get 'behavior-to-csv' do
         response['Content-Type'] = 'text/csv'
         response.status = 200
-        content.join
+
+        user_id = r.params['user_id'] || 'anonymous'
+        if user_id == 'all'
+          data = Behavior.all.map(&:values)
+          headers = data.first.keys.map(&:to_s)
+          content = [headers.to_csv] + data.map { |row| row.values.to_csv }
+          # File.write('./export.csv', content.join)
+          return content.join
+        end
+        unless Chat.first(user_id:).nil?
+          chat_id = Chat.first(user_id:).id
+          data = Behavior.where(chat_id:).map(&:values)
+          headers = data.first.keys.map(&:to_s)
+          content = [headers.to_csv] + data.map { |row| row.values.to_csv }
+          # File.write('./export.csv', content.join)
+          return content.join
+        end
+
+        'No data' if Chat.first(user_id:).nil? # return no data
+      end
+
+      r.get 'message-to-csv' do
+        response['Content-Type'] = 'text/csv'
+        response.status = 200
+
+        user_id = r.params['user_id'] || 'anonymous'
+        if user_id == 'all'
+          data = Message.all.map(&:values)
+          headers = data.first.keys.map(&:to_s)
+          content = [headers.to_csv] + data.map { |row| row.values.to_csv }
+          # File.write('./export.csv', content.join)
+          return content.join
+        end
+        unless Chat.first(user_id:).nil?
+          chat_id = Chat.first(user_id:).id
+          data = Message.where(chat_id:).map(&:values)
+          headers = data.first.keys.map(&:to_s)
+          content = [headers.to_csv] + data.map { |row| row.values.to_csv }
+          # File.write('./export.csv', content.join)
+          return content.join
+        end
+
+        'No data' if Chat.first(user_id:).nil? # return no data
       end
 
       # frontend api
