@@ -24,7 +24,7 @@
               </el-card>
               <el-card ref="noteRef" class="note">
                 <div class="scenario-title">
-                  Notes
+                  Your Answer
                 </div>
                 <!--  :autosize="{ minRows: 4, maxRows:10}" -->
                 <el-input
@@ -88,7 +88,7 @@
                 <div v-for="message in messages" :key="message.id" class="message">
                   <el-card>
                     <div class="dialogue"  v-if="message.sender === 'user'" :id="'user_question_block_' + message.id" @mouseup="handleMouseUp" @copy="handleCopy">
-                      <el-avatar :size="size" :src="circleUrl" />
+                      <el-avatar class="avatar user-bg" icon="UserFilled" />
                       <div>
                         <el-tag size="small" :id="'user_question_tag_' + message.id">You</el-tag>
                         <div :id="'user_question_' + message.id">{{ message.text }}</div>
@@ -97,7 +97,7 @@
 
                     </div>
                     <div  class="dialogue" v-else :id="'ai_feedback_block_' + message.id"   @mouseup="handleMouseUp" @copy="handleCopy">
-                      <el-avatar class="avatar" :size="size" :src="circleUrl" />
+                      <el-avatar class="avatar bot-bg"   icon="ChatLineRound" />
                       <div>
                         <el-tag  :id="'ai_feedback_tag_' + message.id" size="small" type="success">Chatbot</el-tag>
                         <div  :id="'ai_feedback_' + message.id" >{{ message.text }}</div>
@@ -157,7 +157,7 @@
                 <div v-for="message in messages" :key="message.id" class="message">
                   <el-card>
                     <div class="dialogue"  v-if="message.sender === 'user'" :id="'user_question_block_' + message.id" @mouseup="handleMouseUp" @copy="handleCopy">
-                      <el-avatar :size="size" :src="circleUrl" />
+                      <el-avatar class="avatar user-bg" icon="UserFilled" />
                       <div>
                         <el-tag size="small" :id="'user_question_tag_' + message.id">You</el-tag>
                         <div :id="'user_question_' + message.id">{{ message.text }}</div>
@@ -166,10 +166,10 @@
 
                     </div>
                     <div class="dialogue" v-else :id="'ai_feedback_block_' + message.id"   @mouseup="handleMouseUp" @copy="handleCopy">
-                      <el-avatar class="avatar" :size="size" :src="circleUrl" />
+                      <el-avatar class="avatar bot-bg"  icon="ChatLineRound" />
                       <div>
                         <el-tag  :id="'ai_feedback_tag_' + message.id" size="small" type="success">Chatbot</el-tag>
-                        <div  :id="'ai_feedback_' + message.id" >{{ message.text }} Lorem ipsum dolor sit amet consectetur adipisicing elit. Iste, cum consequuntur, aspernatur perferendis voluptates accusamus excepturi sint modi ea sed omnis dolorem fugiat culpa iure dolores eum odit nulla vel.</div>
+                        <div  :id="'ai_feedback_' + message.id" >{{ message.text }} </div>
                         <el-tooltip :id="'icon_' + message.id" placement="bottom">
                           <template  #content> Copy </template>
                           <el-button :id="'button_' + message.id" size="small" type="info" plain  @click="handleCopiedButton" round >
@@ -931,6 +931,12 @@ export default {
 
 .avatar{
   flex-shrink: 0;
+}
+.user-bg{
+  background: #409EFF;
+}
+.bot-bg{
+  background: #67C23A;
 }
 
 .scenario-title{
