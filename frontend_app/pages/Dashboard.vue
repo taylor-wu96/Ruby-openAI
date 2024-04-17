@@ -84,7 +84,7 @@
                     </template>
                   </el-popover>
               </div>
-              <el-scrollbar>
+              <el-scrollbar max-height="100%" height="100%" ref="scrollContainer">
                 <div v-for="message in messages" :key="message.id" class="message">
                   <el-card>
                     <div class="dialogue"  v-if="message.sender === 'user'" :id="'user_question_block_' + message.id" @mouseup="handleMouseUp" @copy="handleCopy">
@@ -156,8 +156,8 @@
 
         <el-drawer class="inner-drawer" v-model="drawer" size="80%" title="Task AI" >
            <div class="chat-area cloudy-glass">
-              <el-scrollbar>
-                <div v-for="message in messages" :key="message.id" class="message">
+              <el-scrollbar ref="scrollContainer">
+                <div  v-for="message in messages" :key="message.id" class="message">
                   <el-card>
                     <div class="dialogue"  v-if="message.sender === 'user'" :id="'user_question_block_' + message.id" @mouseup="handleMouseUp" @copy="handleCopy">
                       <el-avatar class="avatar user-bg" icon="UserFilled" />
@@ -266,7 +266,7 @@
 <script>
 import Constants from "../constant/Constants.vue";
 import axios from "axios";
-import { ref} from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { watchEffect } from 'vue';
@@ -289,6 +289,7 @@ export default {
     const highlightedText=ref('');
     const user_id = ref('anonymous');
     const route = useRoute();
+
     const temp=ref(Constants.DEFAULTS_TEMP)
 
     //  test for tour
@@ -300,8 +301,10 @@ export default {
     const chatBotRef = ref(null)
     const submitTaskRef = ref(null)
     const infoRef = ref(null)
-    const mobileDrawer = ref(window.innerWidth<992?true:false)
+    const scrollContainer = ref(null);
 
+
+    const mobileDrawer = ref(window.innerWidth<992?true:false)
     const open = ref(true)
 
    
@@ -320,6 +323,14 @@ export default {
     
     });
 
+    watch(messages, () => {
+      // Wait for the next DOM update to scroll
+      nextTick(() => {
+        scrollToBottom();
+      });
+    }, { deep: true });
+
+
     // console.log('Query Parameters:', route.query);
     onMounted(() => {
       document.addEventListener('keydown', handleHighlight);
@@ -337,6 +348,10 @@ export default {
     onUnmounted(() => {
       document.removeEventListener('keydown', handleHighlight);
     });
+
+    function scrollToBottom() {
+      scrollContainer.value.setScrollTop(1e16);
+    }
 
     // Error Prevention
     const checkTaskFinish= () => {
@@ -375,6 +390,9 @@ export default {
           }
         
         }); // Assuming the data is an array of messages
+        nextTick(() => {
+          scrollToBottom();
+        });
       } catch (error) {
         console.error("Failed to fetch initial messages:", error);
       }
@@ -736,7 +754,8 @@ export default {
       hasFinishTask,
       endFocusTime,
       drawer,
-      mobileDrawer, };
+      mobileDrawer,
+      scrollContainer, };
   },
 };
 </script>
