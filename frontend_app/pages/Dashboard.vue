@@ -106,15 +106,16 @@
                           <el-icon :id="'button_' + message.id" ><CopyDocument :id="'button_' + message.id" /> </el-icon>
                         </el-button>
                         </el-tooltip>
+                        <span v-if="isLastChatbotMessage(message)">
+                          <el-button :disabled="MIN_TEMP>=currentTemp" @click="resentMessage(false)" size="small" type="info" plain round>
+                            Retry with more concreteness idea!
+                          </el-button>
+                          <el-button :disabled="MAX_TEMP<=currentTemp" @click="resentMessage(true)" size="small" type="info" plain round>
+                            Retry with more abstract idea!
+                          </el-button>
 
-                        <el-button>
-                          Retry
-                        </el-button>
-                        <el-button>
-                          Retry
-                        </el-button>
+                        </span>                     
                       </div>
-                     
                     </div>
                   </el-card>
                 </div>
@@ -179,8 +180,15 @@
                           <el-icon :id="'button_' + message.id" ><CopyDocument :id="'button_' + message.id" /> </el-icon>
                         </el-button>
                         </el-tooltip>
-                        <!-- :id="'icon_' + message.id"  :id="'button_' + message.id" :id="'template_' + message.id" :id="'tooltip_' + message.id" :id="'copy_' + message.id" -->
+                        <span v-if="isLastChatbotMessage(message)">
+                          <el-button :disabled="MIN_TEMP>=currentTemp" @click="resentMessage(false)" size="small" type="info" plain round>
+                            Retry with more concreteness idea!
+                          </el-button>
+                          <el-button :disabled="MAX_TEMP<=currentTemp" @click="resentMessage(true)" size="small" type="info" plain round>
+                            Retry with more abstract idea!
+                          </el-button>
 
+                        </span>
 
                       </div>
                      
@@ -290,7 +298,9 @@ export default {
     const user_id = ref('anonymous');
     const route = useRoute();
 
-    const temp=ref(Constants.DEFAULTS_TEMP)
+    const currentTemp=ref(Constants.DEFAULTS_TEMP)
+    const MAX_TEMP=Constants.MAX_TEMP
+    const MIN_TEMP=Constants.MIN_TEMP
 
     //  test for tour
     const chatInputRef = ref(null)
@@ -447,7 +457,6 @@ export default {
       console.log('Task:', data);
       console.log('Task:', data.task_name);
       if(data.task_name==='creative'){
-        // createMessage(data.task_name, "assistant");
         scenarioText.value = Constants.CREATIVE;
       }
       else{
@@ -477,6 +486,7 @@ export default {
     async function getResponse(message) {
       const postData = {
         message_content: message,
+        system_temp: currentTemp.value,
         system_content: "user",
       };
         let api_url = "/openai";
@@ -726,6 +736,27 @@ export default {
       highlightedText.value='Task Submitted:'+ textArea.value
     };
 
+
+    // The UI conditions parts
+    const isLastChatbotMessage = (message) => {
+      const lastIndex = messages.value.length - 1;
+      const lastMessage = messages.value[lastIndex];
+      return message.id === lastMessage.id && lastMessage.sender === 'assistant';
+    };
+
+    // Resent the chatbot message
+    const resentMessage = (up) => {
+      const RESENT_PROMPT="Could you provide another idea?"
+      if(up){
+        currentTemp.value+=0.1;
+      }
+      else{
+        currentTemp.value-=0.1;
+      }
+      createMessage(RESENT_PROMPT,'user')
+      getResponse(RESENT_PROMPT)
+    };
+
     return { messages, 
       userInput, 
       scenarioRef,
@@ -755,7 +786,12 @@ export default {
       endFocusTime,
       drawer,
       mobileDrawer,
-      scrollContainer, };
+      scrollContainer,
+      isLastChatbotMessage,
+      MAX_TEMP,
+      MIN_TEMP,
+      currentTemp,
+      resentMessage,};
   },
 };
 </script>
