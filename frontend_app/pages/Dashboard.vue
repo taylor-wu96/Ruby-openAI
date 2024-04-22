@@ -9,7 +9,8 @@
             <span class="brand-class">
               Cohere AI | Your Personal AI Workspace
             </span> 
-            <el-button style="margin-left:4px;" ref="infoRef" size="small" circle type="info" icon="InfoFilled" @click="open = true">
+            <el-button style="margin-left:8px;" round ref="infoRef" size="small" type="info" icon="InfoFilled" @click="open = true">
+              Help
             </el-button>
              </el-row>
           <el-row  :gutter="20">
@@ -23,9 +24,12 @@
                 </div>
               </el-card>
               <el-card ref="noteRef" class="note">
-                <div class="scenario-title">
+                <el-scrollbar always max-height="100%" height="100%">
+                  <div class="scenario-title">
                   Your Answer
+                  <el-text size="small" tag="i"> Enter the all of task in the following input field </el-text>
                 </div>
+
                 <!--  :autosize="{ minRows: 4, maxRows:10}" -->
                 <el-input
                   ref="textareaRef"
@@ -51,19 +55,22 @@
                   <el-button size="small" type="danger"  @click="clearTextArea" round >
                   Reset  <DeleteFilled  style="width:20px; padding:2px 0px 2px 4px;"/> </el-button>
                 </div>
-              <el-form ref="submitTaskRef" :model="form" label-width="auto" >
-                  <div class="submit_block">
-                     <el-form-item label="I have finished the answer">
-                        <el-switch v-model="hasFinishTask" :before-change="checkTaskFinish" :active-icon="Check" :inactive-icon="Close" />
-                      </el-form-item>
-                      <el-form-item>
-                        <el-button  type="info"  :disabled="!hasFinishTask" round @click="onSubmitTask">Submit</el-button>
-                      </el-form-item>
+                <el-form ref="submitTaskRef" :model="form" label-width="auto" >
+                    <div class="submit_block">
+                      <el-form-item label="I have finished the answer">
+                          <el-switch v-model="hasFinishTask" :before-change="checkTaskFinish" :active-icon="Check" :inactive-icon="Close" />
+                        </el-form-item>
+                        <el-form-item>
+                          <el-button  type="info"  :disabled="!hasFinishTask" round @click="onSubmitTask">Submit</el-button>
+                        </el-form-item>
 
-                  </div>
-                 
-              </el-form>
-              <!-- <p>{{highlightedText}}</p> -->
+                    </div>
+                  
+                </el-form>
+                <!-- <p>{{highlightedText}}</p> -->
+
+                </el-scrollbar>
+                
 
             </el-card>
             </el-col>
@@ -72,13 +79,13 @@
               <div >
                   <el-popover
                     placement="top-start"
-                    title="Task AI"
+                    title="Airport Helper"
                     :width="400"
                     trigger="hover"
-                    content="Task AI is a chatbot powered by GPT-3. It can help you with various tasks. especially for text-related tasks."
+                    content="Airport Helper is a chatbot powered by GPT-3. It can help you with various tasks. especially for text-related tasks."
                   >
                     <template #reference>
-                       <el-text  size="large" tag="b" class="chat-title">Task AI 
+                       <el-text  size="large" tag="b" class="chat-title"> Airport Helper
                   <el-tag size="small" type='info' effect="dark"
                   round>Powered by GPT</el-tag>   </el-text>  
                     </template>
@@ -88,30 +95,36 @@
                 <div v-for="message in messages" :key="message.id" class="message">
                   <el-card>
                     <div class="dialogue"  v-if="message.sender === 'user'" :id="'user_question_block_' + message.id" @mouseup="handleMouseUp" @copy="handleCopy">
-                      <el-avatar class="avatar user-bg" icon="UserFilled" />
+                      <el-avatar :size="28" class="avatar user-bg" icon="UserFilled" />
                       <div>
-                        <el-tag size="small" :id="'user_question_tag_' + message.id">You</el-tag>
+                         <div class="user-title"  :id="'user_question_tag_' + message.id">
+                          You
+                        </div>
+                        <!-- <el-tag size="small" :id="'user_question_tag_' + message.id">You</el-tag> -->
                         <div :id="'user_question_' + message.id">{{ message.text }}</div>
                       </div>
 
                     </div>
                     <div  class="dialogue" v-else :id="'ai_feedback_block_' + message.id"   @mouseup="handleMouseUp" @copy="handleCopy">
-                      <el-avatar class="avatar bot-bg"   icon="ChatLineRound" />
+                      <el-avatar :size="28" class="avatar bot-bg"   icon="ChatLineRound" />
                       <div>
-                        <el-tag  :id="'ai_feedback_tag_' + message.id" size="small" type="success">Chatbot</el-tag>
+                        <div class="user-title"  :id="'ai_feedback_tag_' + message.id" >
+                          Chatbot
+                        </div>
+                        <!-- <el-tag  :id="'ai_feedback_tag_' + message.id" size="small" type="success">Chatbot</el-tag> -->
                         <div  :id="'ai_feedback_' + message.id" >{{ message.text }}</div>
-                        <el-tooltip :id="'icon_' + message.id" placement="bottom">
+                        <!-- <el-tooltip :id="'icon_' + message.id" placement="bottom">
                           <template  #content> Copy </template>
                           <el-button :id="'button_' + message.id" size="small" type="info" plain  @click="handleCopiedButton" round >
                           <el-icon :id="'button_' + message.id" ><CopyDocument :id="'button_' + message.id" /> </el-icon>
                         </el-button>
-                        </el-tooltip>
+                        </el-tooltip> -->
                         <span v-if="isLastChatbotMessage(message)">
                           <el-button :disabled="MIN_TEMP>=currentTemp" @click="resentMessage(false)" size="small" type="info" plain round>
-                            Retry with more concreteness idea!
+                           Give me more various idea!
                           </el-button>
                           <el-button :disabled="MAX_TEMP<=currentTemp" @click="resentMessage(true)" size="small" type="info" plain round>
-                            Retry with more abstract idea!
+                            Give me more cautious idea!
                           </el-button>
 
                         </span>                     
@@ -155,31 +168,37 @@
             <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px;" /> 
         </el-button>
 
-        <el-drawer class="inner-drawer" v-model="drawer" size="80%" title="Task AI" >
+        <el-drawer class="inner-drawer" v-model="drawer" size="80%" title="Airport Helper" >
            <div class="chat-area cloudy-glass">
-              <el-scrollbar ref="scrollContainer">
+              <el-scrollbar class="scroll-bar" ref="scrollContainer">
                 <div  v-for="message in messages" :key="message.id" class="message">
                   <el-card>
                     <div class="dialogue"  v-if="message.sender === 'user'" :id="'user_question_block_' + message.id" @mouseup="handleMouseUp" @copy="handleCopy">
-                      <el-avatar class="avatar user-bg" icon="UserFilled" />
+                      <el-avatar :size="28" class="avatar user-bg" icon="UserFilled" />
                       <div>
-                        <el-tag size="small" :id="'user_question_tag_' + message.id">You</el-tag>
+                        <div class="user-title"  :id="'user_question_tag_' + message.id">
+                          You
+                        </div>
+                        <!-- <el-tag size="small" :id="'user_question_tag_' + message.id">You</el-tag> -->
                         <div :id="'user_question_' + message.id">{{ message.text }}</div>
                          
                       </div>
 
                     </div>
                     <div class="dialogue" v-else :id="'ai_feedback_block_' + message.id"   @mouseup="handleMouseUp" @copy="handleCopy">
-                      <el-avatar class="avatar bot-bg"  icon="ChatLineRound" />
+                      <el-avatar :size="28" class="avatar bot-bg"  icon="ChatLineRound" />
                       <div>
-                        <el-tag  :id="'ai_feedback_tag_' + message.id" size="small" type="success">Chatbot</el-tag>
+                        <div class="user-title" :id="'ai_feedback_tag_' + message.id">
+                          Chatbot
+                        </div>
+                        <!-- <el-tag  :id="'ai_feedback_tag_' + message.id" size="small" type="success">Chatbot</el-tag> -->
                         <div  :id="'ai_feedback_' + message.id" >{{ message.text }} </div>
-                        <el-tooltip :id="'icon_' + message.id" placement="bottom">
+                        <!-- <el-tooltip :id="'icon_' + message.id" placement="bottom">
                           <template  #content> Copy </template>
                           <el-button :id="'button_' + message.id" size="small" type="info" plain  @click="handleCopiedButton" round >
                           <el-icon :id="'button_' + message.id" ><CopyDocument :id="'button_' + message.id" /> </el-icon>
                         </el-button>
-                        </el-tooltip>
+                        </el-tooltip> -->
                         <span v-if="isLastChatbotMessage(message)">
                           <el-button :disabled="MIN_TEMP>=currentTemp" @click="resentMessage(false)" size="small" type="info" plain round>
                             Retry with more concreteness idea!
@@ -226,37 +245,37 @@
 
         <!-- Tour Code -->
 
-        <el-tour mask v-model="open" type="primary" >
+        <el-tour :finish="console.log('finish')" mask v-model="open" type="primary" >
           <el-tour-step title="Introduction">
             <h1>About this experiment:</h1>
-            <div>This experiment is want to know how will you finish the task. you have the right use the chatbot. it is same as the gpt you use</div>
+            <div>This experiment is want to know how you will finish the task in the scenario. In the experiment, you have the right to unlimited use the chatbot. it is same as the ChatGPT and other kinds of AI tools you use</div>
           </el-tour-step>
           <el-tour-step
             :target="scenarioRef?.$el"
             title="Scenario Block"
-            description="In this part, you will see the scenario of the task. you should follow the instructions to finish the task."
+            description="In this part, you will see the scenario of the task.In this experiment, you should follow the requirement of the scenario to finish the task."
           />
           <el-tour-step
             :target="noteRef?.$el"
             title="Note Block"
-            description="You can keep all of your note and task here before submission. you can see the word count below the text area."
+            description="You can keep all of your notes and task here before submission. you can see the word count below the text area."
 
           />
           <el-tour-step
             placement="left"
             :target="chatBotRef?.$el"
-            title="Task AI Block"
-            description="This the normal llm chatbot you can use. you can ask any question to the chatbot help you finish the task. Need to scroll down to see the latest message."
+            title="Airport Helper Block"
+            description="This the normal llm chatbot like ChatGPT you can use. you can ask any question to the chatbot help you finish the task. Need to scroll down to see the latest message."
           />
           <el-tour-step
             :target="chatInputRef?.$el"
-            title="chatInputRef"
-            description="Type the question here and click the send button to send the message to the chatbot."
+            title="Input Block"
+            description="Type the question you want to ask AI here and click the send button to send the message to the chatbot."
           />
           <el-tour-step
             :target="submitTaskRef?.$el"
             title="Submit Task"
-            description="After you finish the task, you should turn on the toggle I have finished the answer, you can click the submit button to submit the task."
+            description="After you finish the task, you should turn on the toggle I have finished the answer first, amd then you can click the submit button to submit the task."
           />
 
           <el-tour-step
@@ -383,6 +402,12 @@ export default {
       }
     }
     
+    // const hasFinishTour = () => {
+    //   if()
+    //   const storedValue = sessionStorage.getItem('tour');
+    //   open.value = false;
+    // }
+
     // API related
     const initialMessages = async ()=>{
 
@@ -746,7 +771,7 @@ export default {
 
     // Resent the chatbot message
     const resentMessage = (up) => {
-      const RESENT_PROMPT="Could you provide another idea?"
+      const RESENT_PROMPT="Give me another idea?"
       if(up){
         currentTemp.value+=0.1;
       }
@@ -799,6 +824,11 @@ export default {
 <style scoped>
 /* Add your styles here scoped */
 
+*{
+  font: 'Arial' !important;
+  -webkit-font-smoothing: antialiased;
+}
+
 .chat-area,
 .task-area {
   margin: 10px 10px;
@@ -837,9 +867,9 @@ export default {
   padding-bottom: 120px !important;
   }
 
-.message {
-  margin-bottom: 20px;
-}
+/* .message {
+  margin-bottom: 8px;
+} */
 
 .cloudy-glass {
   background: rgba(255, 255, 255, 0.45);
@@ -859,11 +889,8 @@ export default {
 }
 .scenario,
 .note {
-  /* margin-top: 20px; */
-  /* max-height: 100%; */
   max-height: 49%;
   min-height: 49%;
-  /* height: calc(50%-5px); */
   overflow: scroll;
   flex: 1; /* Added */
 }
@@ -957,23 +984,36 @@ export default {
   box-shadow: none;
   border: none;
   border-radius: 10px;
+  /* display: block; */
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  unicode-bidi: isolate;
+  word-wrap: break-word;
+  font-size: 1rem;
+  line-height: 1.5rem;
 }
 
 
 .dialogue{
   display: flex;
+
   align-items: start;
-  gap: 12px;
+  gap: 8px;
 }
 
 .avatar{
   flex-shrink: 0;
 }
 .user-bg{
-  background: #409EFF;
+  background: #79bcff;
+    /* background: #409EFF; */
+
 }
 .bot-bg{
-  background: #67C23A;
+  background: #90c874;
+  /* background: #67C23A; */
 }
 
 .scenario-title{
@@ -985,8 +1025,10 @@ export default {
 .submit_block{
 
   display: flex;
-  justify-content: space-between;
+  height: 100%;
+  justify-content: end;
   align-items: center;
+  gap:0 12px;
 }
 
 .mobile-drawer{
@@ -1016,6 +1058,32 @@ export default {
 .inner-drawer{
   background-color: rgb(158, 158, 158) !important;
 }
+.scroll-bar{
+  transition: all 0.3s;
+}
+.user-title{
+  font-weight: 600;
+  -webkit-user-select: none;
+  user-select: none;
+  font-size: 1rem;
+  line-height: 1.5em;
+  display: block;
+}
+
+.scenario::-webkit-scrollbar {
+  position: absolute;
+  right: 10px;
+  -webkit-appearance: none;
+  width: 4px;
+}
+.scenario::-webkit-scrollbar-thumb {
+  position: absolute;
+  right: 3px;
+  border-radius: 4px;
+  background-color: rgba(124, 124, 124, 0.5);
+  -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+}
+
 @media (min-width:992px) {
   .mobile-drawer{
     display: none;
