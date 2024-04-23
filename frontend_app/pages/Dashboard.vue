@@ -981,6 +981,7 @@ export default {
 .task-area {
   display: flex; /* Added */
   flex-direction: column; /* Added */
+  align-items: center;
   flex: 1; 
   /* Take up remaining space */
 
@@ -1035,10 +1036,10 @@ export default {
   box-shadow: none;
   border-radius: 12px;
   background: #E9EEF6 ;
-  padding: 12px 16px ;
+  padding: 16px 12px; 
   padding-right: 60px;
   /* min-height:1.5rem; */
-  font-size: 1.2rem;
+  font-size: 1rem;
   /* min-height: 50px; */
   /* height: 100%; */
 }
@@ -1118,8 +1119,12 @@ export default {
   line-height: 1.5rem;
 }
 
+.chat-area>>>.bar.el-card{
+ box-shadow: rgba(67, 71, 85, 0.27) 0px 0px 0.25em, rgba(90, 125, 188, 0.05) 0px 0.25em 1em;
+}
+
 .bar {
-  box-shadow: rgba(67, 71, 85, 0.27) 0px 0px 0.25em, rgba(90, 125, 188, 0.05) 0px 0.25em 1em;
+  
   position: absolute;
   bottom: -8px;
   left: -4px;
@@ -1222,11 +1227,11 @@ export default {
   background: #1b1b1b;
   color: #ffffff;  
   vertical-align: middle;
-  border-radius: 16px ;
-  padding: 20px 8px;
+  border-radius: 10px ;
+  padding: 16px 4px;
   vertical-align: middle;
   position: absolute;
-  bottom: 26px;
+  bottom: 28px;
   right: 30px;
   z-index: 100;
 }
