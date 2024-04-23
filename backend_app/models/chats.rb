@@ -21,7 +21,8 @@ module RubyOpenAI
     def attributes
       {
         id:,
-        user_id:
+        user_id:,
+        ip_address:
       }
     end
   end

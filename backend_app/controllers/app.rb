@@ -21,6 +21,37 @@ module RubyOpenAI
         { success: true, message: 'Welcome to ruby openAI world' }.to_json
       end
 
+      r.post 'update_ip' do
+        user_id = r.params['user_id'] || 'anonymous'
+        data = JSON.parse(r.body.read)
+        new_chat = if Chat.first(user_id:).nil?
+                     Chat.create(user_id:)
+                   else
+                     Chat.first(user_id:)
+                   end
+        new_chat.update(ip_address: data['ip_address'])
+        response.status = 201
+        new_chat.attributes.to_json
+      end
+
+      r.post 'submit-task' do
+        user_id = r.params['user_id'] || 'anonymous'
+        data = JSON.parse(r.body.read)
+        new_chat = if Chat.first(user_id:).nil?
+                     Chat.create(user_id:)
+                   else
+                     Chat.first(user_id:)
+                   end
+
+        unless Task.where(chat_id: new_chat.id).empty?
+          task = Task.where(chat_id: new_chat.id).first
+          task.update(final_submission: data['task_description'])
+          return task.attributes.to_json
+        end
+        response.status = 201
+        return { success: false, message: 'No task to update' }.to_json
+      end
+
       r.post 'openai' do
         user_id = r.params['user_id'] || 'anonymous'
         data = JSON.parse(r.body.read)

@@ -7,6 +7,7 @@ Sequel.migration do
     create_table(:chats) do
       primary_key :id
       String :user_id, null: false
+      String :ip_address
       DateTime :created_at
       DateTime :updated_at
     end

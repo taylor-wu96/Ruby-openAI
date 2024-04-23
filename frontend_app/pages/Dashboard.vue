@@ -318,6 +318,7 @@ export default {
 
     const drawer = ref(false)
     const hasFinishTask = ref(false);
+    const ipAddress = ref('');
     const messages = ref([]);
     const textAreaWordCount = ref(0);
     const scenarioText = ref('');
@@ -410,7 +411,7 @@ export default {
     onMounted(async() => {
 
       document.addEventListener('keydown', handleHighlight);
-      await getIPFromAmazon();
+      
       await initialMessages();
      
 
@@ -427,6 +428,8 @@ export default {
       //   textAreaWordCount.value =storedValue.trim().split(/\s+|\n+/).length;
       // }
       await getTask();
+      await getIPFromAmazon();
+      await updateIp();
     })
 
     // Don't forget to clean up the event listener on component unmount
@@ -510,7 +513,16 @@ export default {
         getResponse(userInput.value);
         userInput.value = ''; // Clear input after sending
       }
+      else{
+        ElNotification({
+          title: 'Notice',
+          message: "The message can't be empty!",
+          type: 'warning',
+        })
+      }
     };
+
+
 
 
     // const sendBehavior= async (behavior)=>{
@@ -526,20 +538,21 @@ export default {
     // }
 
   const sendBehavior = async (behavior) => {
-  if (behavior) {
-    let api_url = "/behavior";
-    if (user_id.value !== 'anonymous') {
-      api_url = `/behavior?user_id=${user_id.value}`;
-    }
-    try {
-      const { data } = await axios.post(api_url, behavior);
-      console.log('Response Behavior', data);
-    } catch (error) {
-      console.error('Failed to send behavior:', error);
-      // Handle specific error scenarios here if needed
+    if (behavior) {
+      let api_url = "/behavior";
+      if (user_id.value !== 'anonymous') {
+        api_url = `/behavior?user_id=${user_id.value}`;
+      }
+      try {
+        const { data } = await axios.post(api_url, behavior);
+        console.log('Response Behavior', data);
+      } catch (error) {
+        console.error('Failed to send behavior:', error);
+        // Handle specific error scenarios here if needed
+      }
     }
   }
-}
+
   const getTask = async () => {
     try {
       let api_url = "/random-task";
@@ -558,6 +571,43 @@ export default {
     } catch (error) {
       console.error('Failed to fetch task:', error);
     }
+  }
+
+  const onSubmitTask = async () => {
+    try {
+      let api_url = "/submit-task";
+      if(user_id.value !== 'anonymous'){
+        api_url = `/random-task?user_id=${user_id.value}`
+        ;
+      } 
+      const { data } = await axios.post(api_url,{task_description: textArea.value});
+      ElNotification({
+          title: 'Finish',
+          message: "You have Successfully Submit the task!",
+          type: 'success',
+      })
+    } catch (error) {
+      console.error('Failed to fetch task:', error);
+    }
+  }
+
+  const updateIp = async () => {
+    try {
+      let api_url = "/update_ip";
+      if(user_id.value !== 'anonymous'){
+        api_url = `/random-task?user_id=${user_id.value}`
+        ;
+      } 
+      const { data } = await axios.post(api_url,{ip_address: ipAddress.value});
+      ElNotification({
+          title: 'Finish',
+          // message: "You have Successfully Submit the task!",
+          type: 'success',
+      })
+    } catch (error) {
+      console.error('Failed to update IP:', error);
+    }
+
   }
 
     
@@ -832,17 +882,17 @@ export default {
       }
     })
 
-    const onSubmitTask = async () => {
-      console.log('Task Submitted:', textArea.value);
-      sendBehavior({
-        id: Date.now(),
-        content: textArea.value,
-        type: 'Task Submission',
-        target_object: 'textarea',
-        log_time: new Date().toISOString(),
-      })
-      highlightedText.value='Task Submitted:'+ textArea.value
-    };
+    // const onSubmitTask = async () => {
+    //   console.log('Task Submitted:', textArea.value);
+    //   sendBehavior({
+    //     id: Date.now(),
+    //     content: textArea.value,
+    //     type: 'Task Submission',
+    //     target_object: 'textarea',
+    //     log_time: new Date().toISOString(),
+    //   })
+    //   highlightedText.value='Task Submitted:'+ textArea.value
+    // };
 
 
     // The UI conditions parts
@@ -866,9 +916,12 @@ export default {
     };
 
 
-    // Listen the ipaddress
+    // Listen the ipAddress
     const getIPFromAmazon=async()=> {
-      fetch("https://checkip.amazonaws.com/").then(res => res.text()).then(data => console.log('IP: '+data))
+      fetch("https://checkip.amazonaws.com/").then(res => res.text()).then(data => {
+        ipAddress.value = data;
+        console.log('IP: '+data)
+        })
     }
 
     return { messages, 
