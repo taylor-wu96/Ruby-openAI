@@ -251,6 +251,10 @@
             <h1>About this experiment:</h1>
             <div>This experiment is want to know how you will finish the task in the scenario. In the experiment, you have the right to unlimited use the chatbot. it is same as the ChatGPT and other kinds of AI tools you use</div>
           </el-tour-step>
+                     <!-- -->
+
+
+
           <el-tour-step
             :target="scenarioRef?.$el"
             title="Scenario Block"
@@ -263,23 +267,23 @@
             description="You can keep all of your notes and task here before submission. you can see the word count below the text area."
 
           />
-           <!-- -->
+               <!-- placement="left-start" -->
           <el-tour-step
-            v-if="!mobileDrawer"
-            placement="left-start"
+            :placement="!mobileDrawer?'left':'top-start'"
             :target="chatBotRef?.$el"
             title="Airport Helper Block"
             description="This the normal llm chatbot like ChatGPT you can use. you can ask any question to the chatbot help you finish the task. Need to scroll down to see the latest message."
           />
 
            <!-- placement="top" -->
-          <el-tour-step
+          <!-- <el-tour-step
             v-if="mobileDrawer"
             placement="top"
             :target="chatBotRef?.$el"
             title="Airport Helper Block"
             description="This the normal llm chatbot like ChatGPT you can use. you can ask any question to the chatbot help you finish the task. Need to scroll down to see the latest message."
-          />
+          /> -->
+
           <el-tour-step
             :target="chatInputRef?.$el"
             title="Input Block"
@@ -969,7 +973,7 @@ export default {
 /* Add your styles here scoped */
 
 *{
-  font: 'Arial' !important;
+  /* font: 'Arial' !important; */
   -webkit-font-smoothing: antialiased;
   /* color: #000000df; */
 }
