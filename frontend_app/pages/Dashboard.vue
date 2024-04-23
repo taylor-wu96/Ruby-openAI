@@ -134,7 +134,7 @@
                 </div>
               </el-scrollbar>
               <el-card ref="chatInputRef" class="bar">
-                <el-input
+                <!-- <el-input
                   id="prompt_input"
                   class="prompt_input"
                   name="prompt_input"
@@ -153,12 +153,34 @@
                 >
                   <template #append>
                     <el-button class="submit-chatbot" @click="sendMessage">
-                      
-                      <!-- <div class="submit-chatbot-text">Send</div> -->
                       <Promotion style="width:24px; vertical-align:middle;  padding:0;" />
                     </el-button>
                   </template>
+                </el-input> -->
+                <el-input
+                  type="textarea"
+                  :autosize="{ minRows: 1 , maxRows: 6}"
+                  id="prompt_input"
+                  class="prompt_input"
+                  name="prompt_input"
+                  v-model="userInput"
+                  suffix-icon='Promotion'
+                  placeholder="Type your message here..."
+                  resize="none"
+                  @keydown.ctrl.a="handleHighlight"
+                  @keydown.meta.a="handleHighlight"
+                  @copy="handleCopy"
+                  @cut="handleCopy"
+                  @paste="handlePaste"
+                  @mouseup="handleMouseUp"
+                  @focusin="startFocusTime"
+                  @focusout="endFocusTime"
+
+                >
                 </el-input>
+                <el-button class="submit-chatbot" @click="sendMessage">      
+                      <Promotion style="width:24px; vertical-align:middle;  padding:0;" />
+                </el-button>
               </el-card>
             </el-col>
           </el-row>
@@ -170,7 +192,7 @@
 
         <!-- @closed="scrollToBottom()"  -->
         <el-drawer class="inner-drawer" @open="scrollToBottom();" v-model="drawer" size="80%" title="Airport Helper" >
-           <div class="chat-area cloudy-glass">
+           <div class="m-chat-area">
               <el-scrollbar class="scroll-bar" ref="scrollContainer">
                 <div  v-for="message in messages" :key="message.id" class="message">
                   <el-card>
@@ -192,14 +214,8 @@
                         <div class="user-title" :id="'ai_feedback_tag_' + message.id">
                           Chatbot
                         </div>
-                        <!-- <el-tag  :id="'ai_feedback_tag_' + message.id" size="small" type="success">Chatbot</el-tag> -->
                         <div  :id="'ai_feedback_' + message.id" >{{ message.text }} </div>
-                        <!-- <el-tooltip :id="'icon_' + message.id" placement="bottom">
-                          <template  #content> Copy </template>
-                          <el-button :id="'button_' + message.id" size="small" type="info" plain  @click="handleCopiedButton" round >
-                          <el-icon :id="'button_' + message.id" ><CopyDocument :id="'button_' + message.id" /> </el-icon>
-                        </el-button>
-                        </el-tooltip> -->
+                      
                         <span v-if="isLastChatbotMessage(message)">
                           <el-button :disabled="MIN_TEMP>=currentTemp" @click="resentMessage(false)" size="small" type="info" plain round>
                             Retry with more concreteness idea!
@@ -216,14 +232,17 @@
                   </el-card>
                 </div>
               </el-scrollbar>
-              <el-card  ref="chatInputRef"  class="bar">
+              <el-card ref="chatInputRef" class="bar">
                 <el-input
+                  type="textarea"
+                  :autosize="{ minRows: 1 , maxRows: 6}"
                   id="prompt_input"
                   class="prompt_input"
                   name="prompt_input"
                   v-model="userInput"
+                  suffix-icon='Promotion'
                   placeholder="Type your message here..."
-                  @keyup.enter="sendMessage"
+                  resize="none"
                   @keydown.ctrl.a="handleHighlight"
                   @keydown.meta.a="handleHighlight"
                   @copy="handleCopy"
@@ -232,14 +251,12 @@
                   @mouseup="handleMouseUp"
                   @focusin="startFocusTime"
                   @focusout="endFocusTime"
-                  clearable
+
                 >
-                  <template #append>
-                    <el-button class="submit-chatbot" @click="sendMessage">
-                      <Promotion style="width:24px; vertical-align:middle;  padding:0;" />
-                    </el-button>
-                  </template>
                 </el-input>
+                <el-button class="submit-chatbot" @click="sendMessage">      
+                      <Promotion style="width:24px; vertical-align:middle;  padding:0;" />
+                </el-button>
               </el-card>
             </div>
         </el-drawer>
@@ -251,10 +268,7 @@
             <h1>About this experiment:</h1>
             <div>This experiment is want to know how you will finish the task in the scenario. In the experiment, you have the right to unlimited use the chatbot. it is same as the ChatGPT and other kinds of AI tools you use</div>
           </el-tour-step>
-                     <!-- -->
-
-
-
+         
           <el-tour-step
             :target="scenarioRef?.$el"
             title="Scenario Block"
@@ -274,15 +288,6 @@
             title="Airport Helper Block"
             description="This the normal llm chatbot like ChatGPT you can use. you can ask any question to the chatbot help you finish the task. Need to scroll down to see the latest message."
           />
-
-           <!-- placement="top" -->
-          <!-- <el-tour-step
-            v-if="mobileDrawer"
-            placement="top"
-            :target="chatBotRef?.$el"
-            title="Airport Helper Block"
-            description="This the normal llm chatbot like ChatGPT you can use. you can ask any question to the chatbot help you finish the task. Need to scroll down to see the latest message."
-          /> -->
 
           <el-tour-step
             :target="chatInputRef?.$el"
@@ -342,8 +347,6 @@ export default {
 
     //  test for tour
     const chatInputRef = ref(null)
-    // const ref2 = ref(null)
-    // const ref3 = ref(null)
     const scenarioRef = ref(null)
     const noteRef = ref(null)
     const chatBotRef = ref(null)
@@ -356,31 +359,6 @@ export default {
     const open = ref(true)
     let localData ={}
 
-    
-
-   
-    // watchEffect(() => {
-      
-    //   // if(localStorage.getItem('user_id')){
-    //   //   user_id.value = JSON.parse(localStorage.getItem('user_id'));
-    //   //    console.log('User ID:', user_id.value);
-    //   // }else{
-    //   //   user_id.value = route.query.user_id || 'anonymous';
-    //   //   if(user_id.value !== 'anonymous'){
-    //   //     localStorage.setItem('user_id', JSON.stringify(user_id.value));
-        
-    //   //   }
-    //   // }
-    //   localData['user_id']=route.query.user_id || 'anonymous'
-    //   if(!localStorage.getItem(localData['user_id'])){
-    //     localStorage.setItem(localData['user_id'], JSON.stringify(localData));
-    //   }
-    //   else{
-    //     let data= await localStorage.getItem(localData['user_id'])
-    //     localData=JSON.parse(data)
-    //   }
-    
-    // });
 
     watchEffect(async () => {
       // ...
@@ -417,20 +395,6 @@ export default {
       document.addEventListener('keydown', handleHighlight);
       
       await initialMessages();
-     
-
-      // Retrieve the value from session storage
-      // if (localStorage.getItem(user_id.value)) {
-      //   const storedValue = JSON.parse(localStorage.getItem(user_id.value));
-        
-      //   textArea.value = localStorage.getItem(user_id.value);
-      //   textAreaWordCount.value =textArea.value.trim().split(/\s+|\n+/).length;
-      // }
-      // const storedValue = await localStorage.getItem(user_id.value);
-      // if (storedValue) {
-      //   textArea.value = storedValue;
-      //   textAreaWordCount.value =storedValue.trim().split(/\s+|\n+/).length;
-      // }
       await getTask();
       await getIPFromAmazon();
       await updateIp();
@@ -526,20 +490,6 @@ export default {
       }
     };
 
-
-
-
-    // const sendBehavior= async (behavior)=>{
-    //   if(behavior){
-    //     let api_url = "/behavior";
-    //     if(user_id.value !== 'anonymous'){
-    //       api_url = `/behavior?user_id=${user_id.value}`;
-    //     } 
-    //     const { data } = await axios.post(api_url, behavior);
-    //     console.log('Response Behavior',data);
-
-    //   }
-    // }
 
   const sendBehavior = async (behavior) => {
     if (behavior) {
@@ -984,6 +934,28 @@ export default {
   max-height: calc(100vh - 100px); /* Adjust the value based on your layout */
   height:calc(100vh - 100px) ;
 }
+.m-chat-area{
+  width: 100%;
+  height: 100%;
+  flex: 2;
+  position: relative;
+  padding-bottom: 80px !important;
+  
+}
+.m-chat-area>>>.el-card{
+  box-shadow: none;
+  border: none;
+  margin: 0px;
+  unicode-bidi: isolate;
+  word-wrap: break-word;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  padding: 0px 0px;
+
+}
+.m-chat-area>>>.el-card__body{
+  padding: 8px 0px;
+}
 .brand-area{
   padding: 0 10px;
   display: flex;
@@ -1017,14 +989,10 @@ export default {
 
 .chat-area {
   flex: 2;
- 
   position: relative;
   padding-bottom: 150px !important;
   }
 
-/* .message {
-  margin-bottom: 8px;
-} */
 
 .cloudy-glass {
   background: rgba(255, 255, 255, 0.45);
@@ -1061,17 +1029,22 @@ export default {
   padding: 10px 0;
 }
 
-.bar>>>.el-input{
+.bar>>>.el-textarea__inner{
   width: 100%;
-  border-radius: 25px;
+  border: none;
+  box-shadow: none;
+  border-radius: 12px;
   background: #E9EEF6 ;
-  padding: 8px 16px ;
-
+  padding: 12px 16px ;
+  padding-right: 60px;
+  /* min-height:1.5rem; */
+  font-size: 1.2rem;
+  /* min-height: 50px; */
+  /* height: 100%; */
 }
 
 .bar>>>.el-input__wrapper,
 .bar>>>.el-input-group__append
-
  {
   /* width: 100%; */
   border-radius: 0;
@@ -1146,6 +1119,7 @@ export default {
 }
 
 .bar {
+  box-shadow: rgba(67, 71, 85, 0.27) 0px 0px 0.25em, rgba(90, 125, 188, 0.05) 0px 0.25em 1em;
   position: absolute;
   bottom: -8px;
   left: -4px;
@@ -1242,6 +1216,25 @@ export default {
 .el-tour__content{
   max-width: 600px;
   width: 80% !important;
+}
+
+.bar .submit-chatbot{
+  background: #1b1b1b;
+  color: #ffffff;  
+  vertical-align: middle;
+  border-radius: 16px ;
+  padding: 20px 8px;
+  vertical-align: middle;
+  position: absolute;
+  bottom: 26px;
+  right: 30px;
+  z-index: 100;
+}
+
+.m-chat-area .bar .submit-chatbot{
+  /* position: absolute; */
+  bottom: 14px;
+  right: 12px;
 }
 
 @media (min-width:992px) {
