@@ -475,11 +475,6 @@ export default {
       }
     }
     
-    // const hasFinishTour = () => {
-    //   if()
-    //   const storedValue = localStorage.getItem('tour');
-    //   open.value = false;
-    // }
 
     // API related
     const initialMessages = async ()=>{
@@ -628,13 +623,6 @@ export default {
             log_time: new Date().toISOString(),
           })  
         }
-      }
-      else{
-         ElNotification({
-          title: 'Error',
-          message: "The input value can't be empty",
-        })
-
       }
     };
     const clearTextArea = () => {
@@ -964,8 +952,10 @@ export default {
 .task-area {
   display: flex; /* Added */
   flex-direction: column; /* Added */
-  flex: 1; /* Take up remaining space */
-  padding-right: 20px; /* Add some spacing between columns */
+  /* flex: 1;  */
+  /* Take up remaining space */
+
+  /* padding-right: 20px; Add some spacing between columns */
 }
 
 .chat-area {
@@ -986,21 +976,21 @@ export default {
   -webkit-backdrop-filter: blur(12px);
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 20px;
+  /* padding: 20px; */
 }
 .bar {
   position: absolute;
-  bottom: 0;
+  bottom: 0px;
   left: 0;
   right: 0; /* Add this to make the bar span the entire width */
   z-index: 1;
 }
 .scenario,
 .note {
-  max-height: 49%;
-  min-height: 49%;
+  max-height: 48%;
+  min-height: 45%;
   overflow: scroll;
-  flex: 1; /* Added */
+  /* flex: 1; Added */
 }
 .note{
   margin-top: 10px;
@@ -1086,23 +1076,26 @@ export default {
 
 }
 
+
 .task-area>>>.el-card,
 .chat-area>>>.el-card{
   background: #ffffff;
   box-shadow: none;
   border: none;
   border-radius: 10px;
-  /* display: block; */
-  margin-block-start: 1em;
+  margin: 0;
+  /* margin-block-start: 1em;
   margin-block-end: 1em;
   margin-inline-start: 0px;
-  margin-inline-end: 0px;
+  margin-inline-end: 0px; */
   unicode-bidi: isolate;
   word-wrap: break-word;
   font-size: 1rem;
   line-height: 1.5rem;
 }
-
+.task-area>>>.el-card{
+ margin: 10px 0;
+}
 
 .dialogue{
   display: flex;
