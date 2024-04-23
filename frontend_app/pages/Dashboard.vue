@@ -6,9 +6,9 @@
         <el-main>
           <el-row :gutter="20" class="brand-area">
             <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px; margin-right: 10px;" /> 
-            <span class="brand-class">
+            <div class="brand-class">
               Cohere AI | Your Personal AI Workspace
-            </span> 
+            </div> 
             <el-button style="margin-left:8px;" round ref="infoRef" size="small" type="info" icon="InfoFilled" @click="open = true">
               Help
             </el-button>
@@ -55,10 +55,10 @@
                   <el-button size="small" type="danger"  @click="clearTextArea" round >
                   Reset  <DeleteFilled  style="width:20px; padding:2px 0px 2px 4px;"/> </el-button>
                 </div>
-                <el-form ref="submitTaskRef" :model="form" label-width="auto" >
+                <el-form ref="submitTaskRef"  label-width="auto" >
                     <div class="submit_block">
                       <el-form-item label="I have finished the answer">
-                          <el-switch v-model="hasFinishTask" :before-change="checkTaskFinish" :active-icon="Check" :inactive-icon="Close" />
+                          <el-switch v-model="hasFinishTask" :before-change="checkTaskFinish" active-icon="Check" inactive-icon="Close" />
                         </el-form-item>
                         <el-form-item>
                           <el-button  type="info"  :disabled="!hasFinishTask" round @click="onSubmitTask">Submit</el-button>
@@ -168,7 +168,8 @@
             <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px;" /> 
         </el-button>
 
-        <el-drawer class="inner-drawer" v-model="drawer" size="80%" title="Airport Helper" >
+        <!-- @closed="scrollToBottom()"  -->
+        <el-drawer class="inner-drawer" @open="scrollToBottom();" v-model="drawer" size="80%" title="Airport Helper" >
            <div class="chat-area cloudy-glass">
               <el-scrollbar class="scroll-bar" ref="scrollContainer">
                 <div  v-for="message in messages" :key="message.id" class="message">
@@ -245,7 +246,7 @@
 
         <!-- Tour Code -->
 
-        <el-tour :finish="console.log('finish')" mask v-model="open" type="primary" >
+        <el-tour :show-close="false" :finish="tourFinished()" :mask="{ color: '#000000df', }" v-model="open" type="default" >
           <el-tour-step title="Introduction">
             <h1>About this experiment:</h1>
             <div>This experiment is want to know how you will finish the task in the scenario. In the experiment, you have the right to unlimited use the chatbot. it is same as the ChatGPT and other kinds of AI tools you use</div>
@@ -258,11 +259,23 @@
           <el-tour-step
             :target="noteRef?.$el"
             title="Note Block"
+            
             description="You can keep all of your notes and task here before submission. you can see the word count below the text area."
 
           />
+           <!-- -->
           <el-tour-step
-            placement="left"
+            v-if="!mobileDrawer"
+            placement="left-start"
+            :target="chatBotRef?.$el"
+            title="Airport Helper Block"
+            description="This the normal llm chatbot like ChatGPT you can use. you can ask any question to the chatbot help you finish the task. Need to scroll down to see the latest message."
+          />
+
+           <!-- placement="top" -->
+          <el-tour-step
+            v-if="mobileDrawer"
+            placement="top"
             :target="chatBotRef?.$el"
             title="Airport Helper Block"
             description="This the normal llm chatbot like ChatGPT you can use. you can ask any question to the chatbot help you finish the task. Need to scroll down to see the latest message."
@@ -297,7 +310,7 @@ import { ref, watch, nextTick } from 'vue';
 import { onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { watchEffect } from 'vue';
-import { ElMessage } from 'element-plus'
+import { ElMessage,ElNotification  } from 'element-plus'
 
 
 export default {
@@ -314,8 +327,9 @@ export default {
     const textArea = ref('');
     const textareaRef = ref(null); // Add this line to define a ref for the textarea
     const highlightedText=ref('');
-    const user_id = ref('anonymous');
     const route = useRoute();
+    const user_id = ref('anonymous');
+   
 
     const currentTemp=ref(Constants.DEFAULTS_TEMP)
     const MAX_TEMP=Constants.MAX_TEMP
@@ -335,21 +349,53 @@ export default {
 
     const mobileDrawer = ref(window.innerWidth<992?true:false)
     const open = ref(true)
+    let localData ={}
+
+    
 
    
-    watchEffect(() => {
+    // watchEffect(() => {
       
-      if(sessionStorage.getItem('user_id')){
-        user_id.value = JSON.parse(sessionStorage.getItem('user_id'));
-         console.log('User ID:', user_id.value);
-      }else{
-        user_id.value = route.query.user_id || 'anonymous';
-        if(user_id.value !== 'anonymous'){
-          sessionStorage.setItem('user_id', JSON.stringify(user_id.value));
+    //   // if(localStorage.getItem('user_id')){
+    //   //   user_id.value = JSON.parse(localStorage.getItem('user_id'));
+    //   //    console.log('User ID:', user_id.value);
+    //   // }else{
+    //   //   user_id.value = route.query.user_id || 'anonymous';
+    //   //   if(user_id.value !== 'anonymous'){
+    //   //     localStorage.setItem('user_id', JSON.stringify(user_id.value));
         
+    //   //   }
+    //   // }
+    //   localData['user_id']=route.query.user_id || 'anonymous'
+    //   if(!localStorage.getItem(localData['user_id'])){
+    //     localStorage.setItem(localData['user_id'], JSON.stringify(localData));
+    //   }
+    //   else{
+    //     let data= await localStorage.getItem(localData['user_id'])
+    //     localData=JSON.parse(data)
+    //   }
+    
+    // });
+
+    watchEffect(async () => {
+      // ...
+      user_id.value = route.query.user_id || 'anonymous';
+      localData['user_id'] = user_id.value
+      if (!localStorage.getItem(user_id.value)) {
+        localStorage.setItem(user_id.value, JSON.stringify(localData));
+        console.log('Local Data:', localData);
+      } else {
+        const data = await localStorage.getItem(user_id.value);
+        localData = JSON.parse(data);
+        console.log('Local Data:', localData);
+        textArea.value = localData['storage_notes']||'';
+        if(textArea.value){
+          textAreaWordCount.value = textArea.value.trim().split(/\s+|\n+/).length;
+        }
+        if(localData['tour']===false){
+          open.value = localData['tour'];
         }
       }
-    
     });
 
     watch(messages, () => {
@@ -361,16 +407,26 @@ export default {
 
 
     // console.log('Query Parameters:', route.query);
-    onMounted(() => {
+    onMounted(async() => {
+
       document.addEventListener('keydown', handleHighlight);
-      initialMessages();
+      await getIPFromAmazon();
+      await initialMessages();
+     
+
       // Retrieve the value from session storage
-      const storedValue = sessionStorage.getItem('storage_notes');
-      if (storedValue) {
-        textArea.value = storedValue;
-        textAreaWordCount.value =storedValue.trim().split(/\s+|\n+/).length;
-      }
-      getTask();
+      // if (localStorage.getItem(user_id.value)) {
+      //   const storedValue = JSON.parse(localStorage.getItem(user_id.value));
+        
+      //   textArea.value = localStorage.getItem(user_id.value);
+      //   textAreaWordCount.value =textArea.value.trim().split(/\s+|\n+/).length;
+      // }
+      // const storedValue = await localStorage.getItem(user_id.value);
+      // if (storedValue) {
+      //   textArea.value = storedValue;
+      //   textAreaWordCount.value =storedValue.trim().split(/\s+|\n+/).length;
+      // }
+      await getTask();
     })
 
     // Don't forget to clean up the event listener on component unmount
@@ -378,8 +434,25 @@ export default {
       document.removeEventListener('keydown', handleHighlight);
     });
 
-    function scrollToBottom() {
-      scrollContainer.value.setScrollTop(1e16);
+
+    // Tour 
+    const tourFinished = () => {
+      console.log('Tour Finished');
+      localData['tour']=false;
+      localStorage.setItem(user_id.value, JSON.stringify(localData));
+    };
+
+
+    // Chat to bottom
+    async function scrollToBottom() {
+      try{
+        if (scrollContainer.value) {
+          scrollContainer.value.setScrollTop(1e16);
+        }
+      }catch(error){
+        console.error('Failed to scroll to bottom:', error);
+      }
+      // scrollContainer.value.setScrollTop(1e16);
     }
 
     // Error Prevention
@@ -404,7 +477,7 @@ export default {
     
     // const hasFinishTour = () => {
     //   if()
-    //   const storedValue = sessionStorage.getItem('tour');
+    //   const storedValue = localStorage.getItem('tour');
     //   open.value = false;
     // }
 
@@ -537,7 +610,9 @@ export default {
 
       if (inputValue !== undefined) {
 
-        sessionStorage.setItem('storage_notes', inputValue);
+        localData['storage_notes']=inputValue
+        localStorage.setItem(user_id.value, JSON.stringify(localData));
+        // localStorage.setItem('storage_notes', inputValue);
         // console.log('Input Value:', inputValue, inputValue.split(/\s+|\n+/).length);
         const words = inputValue.trim().split(/\s+|\n+/);
         let previousWordCount = textAreaWordCount.value;
@@ -554,20 +629,39 @@ export default {
           })  
         }
       }
+      else{
+         ElNotification({
+          title: 'Error',
+          message: "The input value can't be empty",
+        })
+
+      }
     };
     const clearTextArea = () => {
-      textArea.value = '';
-      textAreaWordCount.value = 0; // Explicitly set word count to 0 here
-      sessionStorage.setItem('storage_notes', '');
-      handleInput(null, ''); 
-      sendBehavior({
-        id: Date.now(),
-        content: 'User Cleared TextBox',
-        type: 'Clear',
-        target_object: 'textarea',
-        log_time: new Date().toISOString(),
-      })  
-      highlightedText.value='User Cleared TextBox:'
+       ElMessageBox.confirm('Are you sure to delete all of the text?')
+        .then(() => {
+          textArea.value = '';
+          textAreaWordCount.value = 0; // Explicitly set word count to 0 here
+          localData['storage_notes']=''
+          localStorage.setItem(user_id.value, JSON.stringify(localData));
+
+          handleInput(null, ''); 
+          sendBehavior({
+            id: Date.now(),
+            content: 'User Cleared TextBox',
+            type: 'Clear',
+            target_object: 'textarea',
+            log_time: new Date().toISOString(),
+          })  
+          highlightedText.value='User Cleared TextBox:'
+          done()
+        })
+        .catch((err) => {
+
+          // catch error
+        })
+
+     
     };
 
     const handleCopiedButton = async(e) => {
@@ -687,7 +781,7 @@ export default {
       }
       // Update the session storage
       // console.log('textArea Text:', textArea.value);
-      // sessionStorage.setItem('storage_notes', textArea.value);
+      // localStorage.setItem('storage_notes', textArea.value);
 
     };
 
@@ -743,6 +837,7 @@ export default {
         console.log("Window width:", window.innerWidth); 
         console.log('Mobile View');
         mobileDrawer.value = true;
+
       }
       else{
         mobileDrawer.value = false;
@@ -782,6 +877,12 @@ export default {
       getResponse(RESENT_PROMPT)
     };
 
+
+    // Listen the ipaddress
+    const getIPFromAmazon=async()=> {
+      fetch("https://checkip.amazonaws.com/").then(res => res.text()).then(data => console.log('IP: '+data))
+    }
+
     return { messages, 
       userInput, 
       scenarioRef,
@@ -791,6 +892,7 @@ export default {
       chatInputRef,
       infoRef,
       open,
+      tourFinished,
       scenarioText,
       textArea,
       textAreaWordCount,
@@ -811,6 +913,7 @@ export default {
       endFocusTime,
       drawer,
       mobileDrawer,
+      scrollToBottom,
       scrollContainer,
       isLastChatbotMessage,
       MAX_TEMP,
@@ -827,6 +930,7 @@ export default {
 *{
   font: 'Arial' !important;
   -webkit-font-smoothing: antialiased;
+  /* color: #000000df; */
 }
 
 .chat-area,
@@ -836,14 +940,18 @@ export default {
   height:calc(100vh - 100px) ;
 }
 .brand-area{
-  padding: 0 20px;
+  padding: 0 10px;
   display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
   align-items: center;
   
 }
 .brand-class{
   font-weight: bold;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
+  word-wrap: break-word;
+  display: inline-block;
 }
 
 .dashboard {
@@ -1082,6 +1190,10 @@ export default {
   border-radius: 4px;
   background-color: rgba(124, 124, 124, 0.5);
   -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+}
+.el-tour__content{
+  max-width: 600px;
+  width: 80% !important;
 }
 
 @media (min-width:992px) {
