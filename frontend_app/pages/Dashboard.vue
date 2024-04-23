@@ -952,7 +952,7 @@ export default {
 .task-area {
   display: flex; /* Added */
   flex-direction: column; /* Added */
-  /* flex: 1;  */
+  flex: 1; 
   /* Take up remaining space */
 
   /* padding-right: 20px; Add some spacing between columns */
@@ -962,7 +962,7 @@ export default {
   flex: 2;
  
   position: relative;
-  padding-bottom: 120px !important;
+  padding-bottom: 150px !important;
   }
 
 /* .message {
@@ -978,13 +978,7 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.1);
   /* padding: 20px; */
 }
-.bar {
-  position: absolute;
-  bottom: 0px;
-  left: 0;
-  right: 0; /* Add this to make the bar span the entire width */
-  z-index: 1;
-}
+
 .scenario,
 .note {
   max-height: 48%;
@@ -1083,7 +1077,7 @@ export default {
   box-shadow: none;
   border: none;
   border-radius: 10px;
-  margin: 0;
+  margin: 8px 4px;
   /* margin-block-start: 1em;
   margin-block-end: 1em;
   margin-inline-start: 0px;
@@ -1093,13 +1087,17 @@ export default {
   font-size: 1rem;
   line-height: 1.5rem;
 }
-.task-area>>>.el-card{
- margin: 10px 0;
+
+.bar {
+  position: absolute;
+  bottom: -8px;
+  left: -4px;
+  right: -4px; /* Add this to make the bar span the entire width */
+  z-index: 1;
 }
 
 .dialogue{
   display: flex;
-
   align-items: start;
   gap: 8px;
 }
