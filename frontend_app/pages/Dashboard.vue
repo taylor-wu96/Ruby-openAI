@@ -528,7 +528,7 @@ export default {
     try {
       let api_url = "/submit-task";
       if(user_id.value !== 'anonymous'){
-        api_url = `/random-task?user_id=${user_id.value}`
+        api_url = `/submit-task?user_id=${user_id.value}`
         ;
       } 
       const { data } = await axios.post(api_url,{task_description: textArea.value});
