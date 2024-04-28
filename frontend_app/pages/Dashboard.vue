@@ -102,7 +102,7 @@
                           You
                         </div>
                         <!-- <el-tag size="small" :id="'user_question_tag_' + message.id">You</el-tag> -->
-                        <div :id="'user_question_' + message.id">{{ message.text }}</div>
+                        <div :id="'user_question_' + message.id" style="white-space: pre-line">{{ message.text}}</div>
                       </div>
 
                     </div>
@@ -113,7 +113,7 @@
                           Chatbot
                         </div>
                         <!-- <el-tag  :id="'ai_feedback_tag_' + message.id" size="small" type="success">Chatbot</el-tag> -->
-                        <div  :id="'ai_feedback_' + message.id" >{{ message.text }}</div>
+                        <div  :id="'ai_feedback_' + message.id" style="white-space: pre-line" >{{ message.text}}</div>
                         <!-- <el-tooltip :id="'icon_' + message.id" placement="bottom">
                           <template  #content> Copy </template>
                           <el-button :id="'button_' + message.id" size="small" type="info" plain  @click="handleCopiedButton" round >
@@ -203,7 +203,7 @@
                           You
                         </div>
                         <!-- <el-tag size="small" :id="'user_question_tag_' + message.id">You</el-tag> -->
-                        <div :id="'user_question_' + message.id">{{ message.text }}</div>
+                        <div :id="'user_question_' + message.id" style="white-space: pre-line">{{ message.text }}</div>
                          
                       </div>
 
@@ -211,10 +211,10 @@
                     <div class="dialogue" v-else :id="'ai_feedback_block_' + message.id"   @mouseup="handleMouseUp" @copy="handleCopy">
                       <el-avatar :size="28" class="avatar bot-bg"  icon="ChatLineRound" />
                       <div>
-                        <div class="user-title" :id="'ai_feedback_tag_' + message.id">
+                        <div class="user-title" :id="'ai_feedback_tag_' + message.id" >
                           Chatbot
                         </div>
-                        <div  :id="'ai_feedback_' + message.id" >{{ message.text }} </div>
+                        <div  :id="'ai_feedback_' + message.id" style="white-space: pre-line">{{ message.text }} </div>
                       
                         <span v-if="isLastChatbotMessage(message)">
                           <el-button :disabled="MIN_TEMP>=currentTemp" @click="resentMessage(false)" size="small" type="info" plain round>
@@ -341,6 +341,7 @@ export default {
     const currentTemp=ref(Constants.DEFAULTS_TEMP)
     const MAX_TEMP=Constants.MAX_TEMP
     const MIN_TEMP=Constants.MIN_TEMP
+    let focus_leave=0
 
     //  test for tour
     const chatInputRef = ref(null)
@@ -640,7 +641,7 @@ export default {
             id: Date.now(),
             content: 'User Cleared TextBox',
             type: 'Clear',
-            target_object: 'textarea',
+            target_object: 'NoteArea',
             log_time: new Date().toISOString(),
           })  
           highlightedText.value='User Cleared TextBox:'
@@ -781,15 +782,16 @@ export default {
       }
     };
 
-    const endFocusTime = () => {
+    const endFocusTime = (e) => {
       focusTimeEnd = new Date().getTime();
       console.log('Time Spent:', (focusTimeEnd - focusTimeStart) / 1000);
       highlightedText.value='Focus Time Spent:'+ (focusTimeEnd - focusTimeStart) / 1000
+      const targetElementName = e.target.name||e.target.id||e.target.nodeName;
       sendBehavior({
         id: Date.now(),
         content: (focusTimeEnd - focusTimeStart) / 1000,
         type: 'focus_time',
-        target_object: 'textarea',
+        target_object: targetElementName,
         log_time: new Date(focusTimeEnd).toISOString(),
       })
       focusTimeStart = 0;
@@ -798,28 +800,40 @@ export default {
     document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       console.log('User is focused on the page');
-      // Perform actions when the page is in focus
-      sendBehavior({
+      if(focus_leave===0){
+        sendBehavior({
             id: Date.now(),
-            content: 'User is focused on the page on' + Date.now().toString(),
-            type: 'Concentration',
+            content: 'User is open the page on' + Date.now().toString(),
+            type: 'Initial',
             target_object: 'page',
             log_time: new Date().toISOString(),
        })  
+      }
+      else{
+         sendBehavior({
+            id: Date.now(),
+            content: (focus_leave-new Date().getTime())/1000,
+            type: 'Leaving Time',
+            target_object: 'page',
+            log_time: new Date().toISOString(),
+       })  
+      }
+      // Perform actions when the page is in focus
+
        highlightedText.value='User is focused on the page'
 
     } else {
       console.log('User has left the page');
       // Perform actions when the page is not in focus
-       highlightedText.value='User has left the page'
-            sendBehavior({
+      sendBehavior({
             id: Date.now(),
-            content: 'User has left the page on' + Date.now().toString(),
-            type: 'Concentration',
+            content: (focus_leave-new Date().getTime())/1000,
+            type: 'Stay Time',
             target_object: 'page',
             log_time: new Date().toISOString(),
-       })  
+      })  
     }
+    focus_leave=new Date().getTime();
     });
     
     window.addEventListener('resize', () => {

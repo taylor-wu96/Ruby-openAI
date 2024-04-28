@@ -197,7 +197,10 @@ module RubyOpenAI
         if user_id == 'all'
           data = Behavior.all.map(&:values)
           headers = data.first.keys.map(&:to_s)
-          content = [headers.to_csv] + data.map { |row| row.values.to_csv }
+          print('headers:', headers)
+          print('data:', data)
+          header_csv = headers.join(',') + "\n"
+          content = [header_csv] + data.map { |row| row.values.join(',') + "\n" }
           # File.write('./export.csv', content.join)
           return content.join
         end
@@ -205,7 +208,8 @@ module RubyOpenAI
           chat_id = Chat.first(user_id:).id
           data = Behavior.where(chat_id:).map(&:values)
           headers = data.first.keys.map(&:to_s)
-          content = [headers.to_csv] + data.map { |row| row.values.to_csv }
+          header_csv = headers.join(',') + "\n"
+          content = [header_csv] + data.map { |row| row.values.join(',') + "\n" }
           # File.write('./export.csv', content.join)
           return content.join
         end
