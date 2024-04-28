@@ -25,27 +25,27 @@ module RubyOpenAI
     API_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
     API_KEY = ENV['OPENAI_API_KEY']
 
-    def self.send_message(system_content, history_messages)
-      response = make_request(system_content, history_messages)
+    def self.send_message(system_content, history_messages, temperature)
+      response = make_request(system_content, history_messages, temperature)
       handle_errors(response)
       JSON.parse(response.body)
     end
 
-    def self.make_request(system_content, history_messages)
+    def self.make_request(system_content, history_messages, temperature)
       uri = URI.parse(API_ENDPOINT)
-      request = build_request(uri, system_content, history_messages)
+      request = build_request(uri, system_content, history_messages, temperature)
       Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
         http.request(request)
       end
     end
 
     # rubocop:disable Metrics/MethodLength
-    def self.build_request_body(system_content, history_messages)
+    def self.build_request_body(system_content, history_messages, temperature)
       # history_messages.
       puts 'test:', JSON.dump(
         {
           'model' => 'gpt-3.5-turbo',
-          'temperature' => 0.6,
+          'temperature' => temperature || 0.6,
           'messages' =>
             history_messages.unshift({
                                        'role' => 'system',
@@ -57,7 +57,7 @@ module RubyOpenAI
       JSON.dump(
         {
           'model' => 'gpt-3.5-turbo',
-          'temperature' => 0.6,
+          'temperature' => temperature || 0.6,
           'messages' =>
             history_messages.unshift({
                                        'role' => 'system',
@@ -82,11 +82,11 @@ module RubyOpenAI
     end
     # rubocop:enable Metrics/MethodLength
 
-    def self.build_request(uri, system_content, history_messages)
+    def self.build_request(uri, system_content, history_messages, temperature)
       request = Net::HTTP::Post.new(uri)
       request.content_type = 'application/json'
       request['Authorization'] = "Bearer #{API_KEY}"
-      request.body = build_request_body(system_content, history_messages)
+      request.body = build_request_body(system_content, history_messages, temperature)
       request
     end
 

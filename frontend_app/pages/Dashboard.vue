@@ -14,11 +14,11 @@
             </el-button>
              </el-row>
           <el-row  :gutter="20">
-            <!-- :span="10" :span="14" -->
-            <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="10" class="task-area cloudy-glass">
+            <el-col :xs="24" :sm="24" :md="24" :lg="13" :xl="13" class="task-area cloudy-glass">
               <el-card ref="scenarioRef" class="scenario">
                 <div class="scenario-title">
-                  Scenario
+                  <!-- Scenario -->
+                  Your Task
                 </div>
                 <div  v-html="scenarioText">
                 </div>
@@ -33,7 +33,7 @@
                 <!--  :autosize="{ minRows: 4, maxRows:10}" -->
                 <el-input
                   ref="textareaRef"
-                  name="storage_notes"
+                  name="NoteArea"
                   v-model="textArea"
                   type="textarea"
                   placeholder="Leave some notes here..."
@@ -52,13 +52,14 @@
                 />
                 <div class="text-area_info">
                   <el-text> {{ textAreaWordCount }} / words</el-text>
-                  <el-button size="small" type="danger"  @click="clearTextArea" round >
-                  Reset  <DeleteFilled  style="width:20px; padding:2px 0px 2px 4px;"/> </el-button>
+                  <!-- <el-button size="small" type="danger"  @click="clearTextArea" round >
+                  Reset  <DeleteFilled  style="width:20px; padding:2px 0px 2px 4px;"/> </el-button> -->
                 </div>
                 <el-form ref="submitTaskRef"  label-width="auto" >
                     <div class="submit_block">
                       <el-form-item label="I have finished the answer">
-                          <el-switch v-model="hasFinishTask" :before-change="checkTaskFinish" active-icon="Check" inactive-icon="Close" />
+                        <!-- active-icon="Check" inactive-icon="Close" -->
+                          <el-switch v-model="hasFinishTask" :before-change="checkTaskFinish"  />
                         </el-form-item>
                         <el-form-item>
                           <el-button  type="info"  :disabled="!hasFinishTask" round @click="onSubmitTask">Submit</el-button>
@@ -74,9 +75,9 @@
 
             </el-card>
             </el-col>
-            <el-col v-if="!mobileDrawer" ref="chatBotRef"  :xs="22" :sm="22" :md="22" :lg="12" :xl="14" class="chat-area cloudy-glass invisible">
+            <el-col v-if="!mobileDrawer" ref="chatBotRef"  :xs="24" :sm="24" :md="24" :lg="11" :xl="11" class="chat-area cloudy-glass invisible">
               <!-- Chat messages will go here -->
-              <div >
+              <div style="padding:5px 4px">
                   <el-popover
                     placement="top-start"
                     title="Airport Helper"
@@ -160,11 +161,10 @@
                 <el-input
                   type="textarea"
                   :autosize="{ minRows: 1 , maxRows: 6}"
-                  id="prompt_input"
+                  id="PromptArea"
                   class="prompt_input"
-                  name="prompt_input"
+                  name="PromptArea"
                   v-model="userInput"
-                  suffix-icon='Promotion'
                   placeholder="Type your message here..."
                   resize="none"
                   @keydown.ctrl.a="handleHighlight"
@@ -187,7 +187,7 @@
         </el-main>
         <!-- Drawer Code For  Mobile -->
         <el-button v-if="mobileDrawer" ref="chatBotRef" class="mobile-drawer"  style="margin-left: 16px" @click="drawer = true">
-            <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px;" /> 
+            <img src="../static/logo.png" alt="PopAi" style="width: 36px; height: 36px;" /> 
         </el-button>
 
         <!-- @closed="scrollToBottom()"  -->
@@ -237,10 +237,9 @@
                   type="textarea"
                   :autosize="{ minRows: 1 , maxRows: 6}"
                   id="prompt_input"
-                  class="prompt_input"
-                  name="prompt_input"
+                  class="PromptArea"
+                  name="PromptArea"
                   v-model="userInput"
-                  suffix-icon='Promotion'
                   placeholder="Type your message here..."
                   resize="none"
                   @keydown.ctrl.a="handleHighlight"
@@ -251,7 +250,6 @@
                   @mouseup="handleMouseUp"
                   @focusin="startFocusTime"
                   @focusout="endFocusTime"
-
                 >
                 </el-input>
                 <el-button class="submit-chatbot" @click="sendMessage">      
@@ -263,7 +261,7 @@
 
         <!-- Tour Code -->
 
-        <el-tour :show-close="false" :finish="tourFinished()" :mask="{ color: '#000000df', }" v-model="open" type="default" >
+        <el-tour :show-close="false" @finish="tourFinished" :mask="{ color: '#000000df', }" v-model="open" type="default" >
           <el-tour-step title="Introduction">
             <h1>About this experiment:</h1>
             <div>This experiment is want to know how you will finish the task in the scenario. In the experiment, you have the right to unlimited use the chatbot. it is same as the ChatGPT and other kinds of AI tools you use</div>
@@ -272,12 +270,11 @@
           <el-tour-step
             :target="scenarioRef?.$el"
             title="Scenario Block"
-            description="In this part, you will see the scenario of the task.In this experiment, you should follow the requirement of the scenario to finish the task."
+            description="In this part, you will understand the scenario of the task.In this experiment, you should follow the requirement of the scenario to finish the task."
           />
           <el-tour-step
             :target="noteRef?.$el"
             title="Note Block"
-            
             description="You can keep all of your notes and task here before submission. you can see the word count below the text area."
 
           />
@@ -286,7 +283,7 @@
             :placement="!mobileDrawer?'left':'top-start'"
             :target="chatBotRef?.$el"
             title="Airport Helper Block"
-            description="This the normal llm chatbot like ChatGPT you can use. you can ask any question to the chatbot help you finish the task. Need to scroll down to see the latest message."
+            description="This airPort Helper is an AI chatbot services. It can help you to generate with your idea. You may need to scroll down to see the latest message."
           />
 
           <el-tour-step
@@ -297,7 +294,7 @@
           <el-tour-step
             :target="submitTaskRef?.$el"
             title="Submit Task"
-            description="After you finish the task, you should turn on the toggle I have finished the answer first, amd then you can click the submit button to submit the task."
+            description="After you finish the task, you should turn on the toggle I have finished the answer first, amd then you can click the submit button to submit your task."
           />
 
           <el-tour-step
@@ -331,7 +328,7 @@ export default {
     const messages = ref([]);
     const textAreaWordCount = ref(0);
     const scenarioText = ref('');
-    const minWords = 160;
+    const minWords = 2;
     const maxWords = 300;
     const userInput = ref('');
     const textArea = ref('');
@@ -549,7 +546,7 @@ export default {
     try {
       let api_url = "/update_ip";
       if(user_id.value !== 'anonymous'){
-        api_url = `/random-task?user_id=${user_id.value}`
+        api_url = `/update_ip?user_id=${user_id.value}`
         ;
       } 
       const { data } = await axios.post(api_url,{ip_address: ipAddress.value});
@@ -576,6 +573,7 @@ export default {
         id: Date.now(),
         text: message,
         sender: identity || "user",
+        temp: currentTemp.value,
       });
     }
     // Get response from the backend
@@ -623,7 +621,7 @@ export default {
             id: Date.now(),
             content: inputValue,
             type: 'Word Add/Remove',
-            target_object: 'textarea',
+            target_object: 'NoteArea',
             log_time: new Date().toISOString(),
           })  
         }
@@ -803,8 +801,8 @@ export default {
       // Perform actions when the page is in focus
       sendBehavior({
             id: Date.now(),
-            content: 'User is focused on the page',
-            type: 'concentration',
+            content: 'User is focused on the page on' + Date.now().toString(),
+            type: 'Concentration',
             target_object: 'page',
             log_time: new Date().toISOString(),
        })  
@@ -816,8 +814,8 @@ export default {
        highlightedText.value='User has left the page'
             sendBehavior({
             id: Date.now(),
-            content: 'User has left the page',
-            type: 'concentration',
+            content: 'User has left the page on' + Date.now().toString(),
+            type: 'Concentration',
             target_object: 'page',
             log_time: new Date().toISOString(),
        })  
@@ -925,7 +923,7 @@ export default {
 *{
   /* font: 'Arial' !important; */
   -webkit-font-smoothing: antialiased;
-  /* color: #000000df; */
+  /* color: #2c2c2cdf !important; */
 }
 
 .chat-area,
@@ -1007,15 +1005,34 @@ export default {
 
 .scenario,
 .note {
-  max-height: 48%;
+  position: relative;
+  box-sizing: border-box;
+  max-height: 48.5%;
   min-height: 45%;
-  overflow: scroll;
+  height: 100%;
+  padding: 10px;
+  /* overflow: scroll; */
   /* flex: 1; Added */
+  overflow-x: hidden; /* Hide horizontal scrollbar */
+  overflow-y: scroll; /* Add vertical scrollbar */
 }
-.note{
-  margin-top: 10px;
+.scenario{
+  padding-right: 30px;
+  /* scrollbar-color: #dcdfe6 #5F6367; */
+  /* scrollbar-gutter: stable both-edges; */
+}
+.scenario::after {
+  content: "» » » »";
+  display: block;
+  width: 10px;
+  position: fixed;
+  right: 6px;
+  top: 40px;
+  font-size: 1.5rem;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
 
-}
 .text-area_info{
   display: flex;
   align-items: center;
@@ -1101,7 +1118,6 @@ export default {
 
 }
 
-
 .task-area>>>.el-card,
 .chat-area>>>.el-card{
   background: #ffffff;
@@ -1142,12 +1158,16 @@ export default {
   flex-shrink: 0;
 }
 .user-bg{
-  background: #79bcff;
+  /* background: #abd5ff; */
+   /* background: #e5ecf7; */
+    background: #48566d;
+   /* background: #79bcff; */
     /* background: #409EFF; */
 
 }
 .bot-bg{
-  background: #90c874;
+  background: #f8b932;
+    /* background: #90c874; */
   /* background: #67C23A; */
 }
 
@@ -1169,20 +1189,21 @@ export default {
 .mobile-drawer{
   position: fixed;
   display: flex;
-  width: 50px;
-  height: 50px;
+  width: 56px;
+  height: 56px;
   align-items: center;
   justify-content: center;
   vertical-align: middle;
-  right: 30px;
-  bottom: 30px;
+  right: 20px;
+  bottom: 20px;
   z-index: 1000;
   box-shadow: #5F6367 0px 0px 10px 0px;
   padding: 10px;
   border: none;
   border-radius: 50%;
-  background: #1b1b1b;
+  background: #ffffff;
   transition: all 0.3s;
+  -webkit-backface-visibility: hidden;
 }
 .mobile-drawer>span{
   display: flex;
@@ -1190,11 +1211,8 @@ export default {
   justify-content: center;
 }
 
-.inner-drawer{
-  background-color: rgb(158, 158, 158) !important;
-}
 .scroll-bar{
-  transition: all 0.3s;
+  transition: all 0.3s ease-in-out;
 }
 .user-title{
   font-weight: 600;
@@ -1206,25 +1224,48 @@ export default {
 }
 
 .scenario::-webkit-scrollbar {
-  position: absolute;
-  right: 10px;
-  -webkit-appearance: none;
-  width: 4px;
+  width: 12px;
+  left:-100px;
+  z-index: 1000;
+
+ 
+}
+.scenario::-webkit-scrollbar-track {
+   /* background: #1b1b1b; */
+   background: #d6dfec;
+    border-radius: 8px;
+     margin-block: 15px;
+   /* color: #000; */
+   /* width: 2px; */
 }
 .scenario::-webkit-scrollbar-thumb {
   position: absolute;
   right: 3px;
-  border-radius: 4px;
-  background-color: rgba(124, 124, 124, 0.5);
-  -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+  border-radius: 8px;
+  /* border: 4px solid  #48566d; */
+  border:4px solid #ffd885;
+  background-clip: content-box;
+  /* -webkit-box-shadow: -2px 0px 1px  #48566d ; */
+  /* display: block; */
+  background-color: rgb(255, 255, 255);
+  /* filter: drop-shadow(5px 5px 5px rgba(0, 0, 0, 0.8)); */
+  /* background: #48566d; */
+  /* -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, .5); */
 }
+
+
+
+
+
+
 .el-tour__content{
   max-width: 600px;
   width: 80% !important;
 }
 
 .bar .submit-chatbot{
-  background: #1b1b1b;
+  /* background: #3a3a3d; */
+  background: #48566d;
   color: #ffffff;  
   vertical-align: middle;
   border-radius: 10px ;
@@ -1241,6 +1282,7 @@ export default {
   bottom: 14px;
   right: 12px;
 }
+
 
 @media (min-width:992px) {
   .mobile-drawer{

@@ -29,8 +29,8 @@ module.exports = {
     //Plugins to help and include additionals functionalities to webpack
     plugins: [
         new HtmlWebpackPlugin({
-            title: 'Minimal Vue Webpack',
-            favicon: path.resolve(__src, 'static', 'favicon.png'),
+            title: 'Cohere AI',
+            favicon: path.resolve(__src, 'static', 'favicon.svg'),
             template: path.resolve(__src, 'templates', 'index.html'),
         }),
         new VueLoaderPlugin(),
@@ -41,7 +41,10 @@ module.exports = {
             resolvers: [ElementPlusResolver()],
         }),
         new webpack.DefinePlugin({
-            'process.env': JSON.stringify(process.env)
+            'process.env': JSON. stringify(process.env),
+            __VUE_OPTIONS_API__: true,
+            __VUE_PROD_DEVTOOLS__: true,
+            __VUE_PROD_HYDRATION_MISMATCH_DETAILS__ : false
         })
     ],
 

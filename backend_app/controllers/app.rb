@@ -55,6 +55,7 @@ module RubyOpenAI
       r.post 'openai' do
         user_id = r.params['user_id'] || 'anonymous'
         data = JSON.parse(r.body.read)
+        temp = data['temp'] || 0.7
         new_chat = if Chat.first(user_id:).nil?
                      Chat.create(user_id:)
                    else
@@ -71,7 +72,7 @@ module RubyOpenAI
         end
         puts 'testable answer:', history_messages
 
-        response_data = ChatGptAPI.send_message(data['system_content'], history_messages)
+        response_data = ChatGptAPI.send_message(data['system_content'], history_messages, temp)
         # puts 'Data: ', response_data
         chatbot_message = Message.create(chat_id: new_chat.id, role: 'assistant',
                                          response: response_data['choices'][0]['message']['content'])
