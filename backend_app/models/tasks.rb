@@ -22,7 +22,9 @@ module RubyOpenAI
         id:,
         chat_id:,
         task_name:,
-        final_submission:
+        final_submission:,
+        message_id:,
+        receipt_handle:
       }
     end
   end
