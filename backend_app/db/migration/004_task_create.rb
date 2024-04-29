@@ -10,6 +10,8 @@ Sequel.migration do
       foreign_key :chat_id, :chats # Links message to a specific chat
       String :task_name
       String :final_submission
+      String :message_id
+      String :receipt_handle
       DateTime :created_at
       DateTime :updated_at
 
