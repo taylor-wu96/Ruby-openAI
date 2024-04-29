@@ -46,6 +46,7 @@ module RubyOpenAI
         unless Task.where(chat_id: new_chat.id).empty?
           task = Task.where(chat_id: new_chat.id).first
           task.update(final_submission: data['task_description'])
+          RandomQueue.new(Api.config).finish_task(task)
           return task.attributes.to_json
         end
         response.status = 201
@@ -62,7 +63,7 @@ module RubyOpenAI
                      Chat.first(user_id:)
                    end
         puts new_chat.attributes
-        user_message = Message.create(chat_id: new_chat.id, role: 'user', response: data['message_content'])
+        Message.create(chat_id: new_chat.id, role: 'user', response: data['message_content'])
 
         history_messages = Message.where(chat_id: new_chat.id).map(&:values).map do |item|
           {
@@ -93,9 +94,13 @@ module RubyOpenAI
         response['Content-Type'] = 'application/json'
         response.status = 200
         user_id = r.params['user_id'] || 'anonymous'
-        chat_id = Chat.first(user_id:).id
+        new_chat = if Chat.first(user_id:).nil?
+                     Chat.create(user_id:)
+                   else
+                     Chat.first(user_id:)
+                   end
 
-        Message.where(chat_id:).map(&:values).to_json
+        Message.where(chat_id: new_chat.id).map(&:values).to_json
       end
 
       r.post 'behavior' do
@@ -121,37 +126,37 @@ module RubyOpenAI
         Behavior.where(chat_id:).map(&:values).to_json
       end
 
-      r.get 'random-task' do
-        # print Task.all
-        # print Task.all.map(:task_name)
-        response['Content-Type'] = 'application/json'
-        response.status = 200
-        user_id = r.params['user_id'] || 'anonymous'
-        new_chat = if Chat.first(user_id:).nil?
-                     Chat.create(user_id:)
-                   else
-                     Chat.first(user_id:)
-                   end
-        unless Task.where(chat_id: new_chat.id).empty?
-          task = Task.where(chat_id: new_chat.id).first
-          return task.attributes.to_json
-        end
-        if Task.all.empty?
-          task = Task.create(task_name: CREATVIE_TASK, chat_id: new_chat.id)
-          return task.attributes.to_json
-        else
-          numOfPracticalTask = Task.all.map(&:task_name).count(PRACTICAL_TASK)
-          numOfCreativeTask = Task.all.map(&:task_name).count(CREATVIE_TASK)
+      # r.get 'random-task' do
+      #   # print Task.all
+      #   # print Task.all.map(:task_name)
+      #   response['Content-Type'] = 'application/json'
+      #   response.status = 200
+      #   user_id = r.params['user_id'] || 'anonymous'
+      #   new_chat = if Chat.first(user_id:).nil?
+      #                Chat.create(user_id:)
+      #              else
+      #                Chat.first(user_id:)
+      #              end
+      #   unless Task.where(chat_id: new_chat.id).empty?
+      #     task = Task.where(chat_id: new_chat.id).first
+      #     return task.attributes.to_json
+      #   end
+      #   if Task.all.empty?
+      #     task = Task.create(task_name: CREATVIE_TASK, chat_id: new_chat.id)
+      #     return task.attributes.to_json
+      #   else
+      #     numOfPracticalTask = Task.all.map(&:task_name).count(PRACTICAL_TASK)
+      #     numOfCreativeTask = Task.all.map(&:task_name).count(CREATVIE_TASK)
 
-          if numOfPracticalTask >= numOfCreativeTask
-            task = Task.create(task_name: CREATVIE_TASK, chat_id: new_chat.id)
-            return task.attributes.to_json
-          else
-            task = Task.create(task_name: PRACTICAL_TASK, chat_id: new_chat.id)
-            return task.attributes.to_json
-          end
-        end
-      end
+      #     if numOfPracticalTask >= numOfCreativeTask
+      #       task = Task.create(task_name: CREATVIE_TASK, chat_id: new_chat.id)
+      #       return task.attributes.to_json
+      #     else
+      #       task = Task.create(task_name: PRACTICAL_TASK, chat_id: new_chat.id)
+      #       return task.attributes.to_json
+      #     end
+      #   end
+      # end
       r.post 'task' do
         response['Content-Type'] = 'application/json'
         response.status = 200
@@ -239,6 +244,45 @@ module RubyOpenAI
         end
 
         'No data' if Chat.first(user_id:).nil? # return no data
+      end
+
+      # test Queue
+      r.get 'queue' do
+        response['Content-Type'] = 'application/json'
+        response.status = 200
+        # print('test:', Api.config)
+        RandomQueue.new(Api.config).queue_attributes.to_json
+      end
+
+      r.get 'reset-queue' do
+        queue = RandomQueue.new(Api.config)
+        queue.clear_queue
+        response['Content-Type'] = 'application/json'
+        response.status = 200
+        queue.fill_task.to_json
+      end
+
+      r.get 'random-task' do
+        response['Content-Type'] = 'application/json'
+        response.status = 200
+        user_id = r.params['user_id'] || 'anonymous'
+        new_chat = if Chat.first(user_id:).nil?
+                     Chat.create(user_id:)
+                   else
+                     Chat.first(user_id:)
+                   end
+        unless Task.where(chat_id: new_chat.id).empty?
+          task = Task.where(chat_id: new_chat.id).first
+          return task.attributes.to_json
+        end
+
+        # task = Task.create(task_name: CREATVIE_TASK, chat_id: new_chat.id)
+
+        queue = RandomQueue.new(Api.config)
+        task_body = queue.random_task
+        task_name = JSON.parse(task_body.body)['task']
+        Task.create(task_name:, chat_id: new_chat.id, message_id: task_body.message_id,
+                    receipt_handle: task_body.receipt_handle).attributes.to_json
       end
 
       # frontend api
