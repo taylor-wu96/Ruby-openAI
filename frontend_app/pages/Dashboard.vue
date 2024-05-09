@@ -263,38 +263,38 @@
 
         <el-tour :show-close="false" @finish="tourFinished" :mask="{ color: '#000000df', }" v-model="open" type="default" >
           <el-tour-step title="Introduction">
-            <h1>About this experiment:</h1>
-            <div>This experiment is want to know how you will finish the task in the scenario. In the experiment, you have the right to unlimited use the chatbot. it is same as the ChatGPT and other kinds of AI tools you use</div>
+            <h1>About this task: </h1>
+            <div>You have to finish a task in a given scenario. You have the right to unlimited use of the AI chatbot provided to you. It is very similar to ChatGPT and other tools you might have used.</div>
           </el-tour-step>
          
           <el-tour-step
             :target="scenarioRef?.$el"
-            title="Scenario Block"
-            description="In this part, you will understand the scenario of the task.In this experiment, you should follow the requirement of the scenario to finish the task."
+            title="Scenario"
+            description="Here, you will see the details of the scenario for the task. You should finish the requirements of the scenario to finish the task. You might need to scroll down to see the full details."
           />
           <el-tour-step
             :target="noteRef?.$el"
-            title="Note Block"
-            description="You can keep all of your notes and task here before submission. you can see the word count below the text area."
+            title="Your Answer"
+            description="You can keep all of your notes and answer here before submission. You can see the word count below the text area."
 
           />
                <!-- placement="left-start" -->
           <el-tour-step
             :placement="!mobileDrawer?'left':'top-start'"
             :target="chatBotRef?.$el"
-            title="Airport Helper Block"
-            description="This airPort Helper is an AI chatbot services. It can help you to generate with your idea. You may need to scroll down to see the latest message."
+            title="Airport Helper AI"
+            description="This Airport Helper is an AI chatbot service. It can help you generate or refine your ideas and words. You might need to scroll down to see the latest message."
           />
 
           <el-tour-step
             :target="chatInputRef?.$el"
-            title="Input Block"
-            description="Type the question you want to ask AI here and click the send button to send the message to the chatbot."
+            title="Question to AI"
+            description="Type the question you want to ask the AI here, and then click the send button to await a response."
           />
           <el-tour-step
             :target="submitTaskRef?.$el"
             title="Submit Task"
-            description="After you finish the task, you should turn on the toggle I have finished the answer first, amd then you can click the submit button to submit your task."
+            description="After you finish the task, you should turn on the toggle to confirm that you have finished the answer, and then you can click the submit button."
           />
 
           <el-tour-step
