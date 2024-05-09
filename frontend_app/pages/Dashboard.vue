@@ -167,6 +167,7 @@
                   v-model="userInput"
                   placeholder="Type your message here..."
                   resize="none"
+                  @input="handlePromptInput($event, userInput)"
                   @keydown.ctrl.a="handleHighlight"
                   @keydown.meta.a="handleHighlight"
                   @copy="handleCopy"
@@ -242,6 +243,7 @@
                   v-model="userInput"
                   placeholder="Type your message here..."
                   resize="none"
+                  @input="handlePromptInput($event, userInput)"
                   @keydown.ctrl.a="handleHighlight"
                   @keydown.meta.a="handleHighlight"
                   @copy="handleCopy"
@@ -336,6 +338,13 @@ export default {
     const highlightedText=ref('');
     const route = useRoute();
     const user_id = ref('anonymous');
+    let promptStartTime=0
+    let promptEndTime=0
+    let wordEditingCount=0
+    let wordDeletingCount=0
+    let characterRevisionCount=0
+    let previousCharacterCount=0
+
    
 
     const currentTemp=ref(Constants.DEFAULTS_TEMP)
@@ -371,6 +380,7 @@ export default {
         console.log('Local Data:', localData);
         textArea.value = localData['storage_notes']||'';
         if(textArea.value){
+          previousCharacterCount = textArea.value.length;
           textAreaWordCount.value = textArea.value.trim().split(/\s+|\n+/).length;
         }
         if(localData['tour']===false){
@@ -478,6 +488,9 @@ export default {
         createMessage(userInput.value,'user');
         getResponse(userInput.value);
         userInput.value = ''; // Clear input after sending
+        console.log('User Prompt Time:', (promptEndTime-promptStartTime)/1000);
+        promptStartTime=0;
+        promptEndTime=0;
       }
       else{
         ElNotification({
@@ -607,7 +620,13 @@ export default {
       }
 
       if (inputValue !== undefined) {
-
+       
+        if(previousCharacterCount ===inputValue.length-1 || previousCharacterCount ===inputValue.length+1){
+          characterRevisionCount+=1;
+          console.log('User Character Modifying :', characterRevisionCount);
+        }
+        previousCharacterCount = textArea.value.length;
+        textArea.value = inputValue;
         localData['storage_notes']=inputValue
         localStorage.setItem(user_id.value, JSON.stringify(localData));
         // localStorage.setItem('storage_notes', inputValue);
@@ -626,8 +645,39 @@ export default {
             log_time: new Date().toISOString(),
           })  
         }
+        if(previousWordCount === textAreaWordCount.value-1){
+         
+          wordEditingCount+=1;
+          console.log('User Manual Modifying :', wordEditingCount);
+
+        }else if(previousWordCount > textAreaWordCount.value){
+          wordDeletingCount+=previousWordCount - textAreaWordCount.value;
+          console.log('User Manual Deleting :', wordDeletingCount);
+        }
+        // else if(previousWordCount === textAreaWordCount.value){
+        //   characterRevisionCount+=1;
+        //   console.log('User Character Modifying :', characterRevisionCount);
+        // }
+
       }
     };
+    const handlePromptInput = (e, value) => {
+      let inputValue;
+      if (e && e.target) {
+        inputValue = e.target.value;
+      } else {
+        inputValue = value;
+      }
+      if(inputValue!==undefined){
+        if(promptStartTime===0){
+          promptStartTime=new Date().getTime();
+        }
+        else{
+          promptEndTime=new Date().getTime();
+        }
+      }
+    };
+
     const clearTextArea = () => {
        ElMessageBox.confirm('Are you sure to delete all of the text?')
         .then(() => {
@@ -906,6 +956,7 @@ export default {
       checkTaskFinish,
       onSubmitTask,
       handleInput,
+      handlePromptInput,
       handleCopiedButton, 
       clearTextArea,
       textareaRef,
