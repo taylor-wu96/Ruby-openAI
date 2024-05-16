@@ -51,7 +51,8 @@
                   @focusout="endFocusTime"
                 />
                 <div class="text-area_info">
-                  <el-text> {{ textAreaWordCount }} / words</el-text>
+                  <el-text> {{ textAreaWordCount }} / words.( {{minWords}}~{{maxWords}} ) </el-text>
+                  <el-text> Time Spend: {{ timeMinutes}}:{{ timeSeconds}} sec ( 10~15 min )  </el-text>
                   <!-- <el-button size="small" type="danger"  @click="clearTextArea" round >
                   Reset  <DeleteFilled  style="width:20px; padding:2px 0px 2px 4px;"/> </el-button> -->
                 </div>
@@ -80,13 +81,13 @@
               <div style="padding:5px 4px">
                   <el-popover
                     placement="top-start"
-                    title="Airport Helper"
+                    title="Task AI"
                     :width="400"
                     trigger="hover"
-                    content="Airport Helper is a chatbot powered by GPT-3. It can help you with various tasks. especially for text-related tasks."
+                    content="Task AI is a chatbot powered by GPT-4o. It can help you with various tasks. especially for text-related tasks."
                   >
                     <template #reference>
-                       <el-text  size="large" tag="b" class="chat-title"> Airport Helper
+                       <el-text  size="large" tag="b" class="chat-title"> Task AI
                   <el-tag size="small" type='info' effect="dark"
                   round>Powered by GPT</el-tag>   </el-text>  
                     </template>
@@ -120,7 +121,7 @@
                           <el-icon :id="'button_' + message.id" ><CopyDocument :id="'button_' + message.id" /> </el-icon>
                         </el-button>
                         </el-tooltip> -->
-                        <span v-if="isLastChatbotMessage(message)">
+                        <!-- <span v-if="isLastChatbotMessage(message)">
                           <el-button :disabled="MIN_TEMP>=currentTemp" @click="resentMessage(false)" size="small" type="info" plain round>
                            Give me more various idea!
                           </el-button>
@@ -128,7 +129,7 @@
                             Give me more cautious idea!
                           </el-button>
 
-                        </span>                     
+                        </span>                      -->
                       </div>
                     </div>
                   </el-card>
@@ -217,7 +218,7 @@
                         </div>
                         <div  :id="'ai_feedback_' + message.id" style="white-space: pre-line">{{ message.text }} </div>
                       
-                        <span v-if="isLastChatbotMessage(message)">
+                        <!-- <span v-if="isLastChatbotMessage(message)">
                           <el-button :disabled="MIN_TEMP>=currentTemp" @click="resentMessage(false)" size="small" type="info" plain round>
                             Retry with more concreteness idea!
                           </el-button>
@@ -225,7 +226,7 @@
                             Retry with more abstract idea!
                           </el-button>
 
-                        </span>
+                        </span> -->
 
                       </div>
                      
@@ -344,7 +345,13 @@ export default {
     let wordDeletingCount=0
     let characterRevisionCount=0
     let previousCharacterCount=0
+    let timeId
 
+    // Timer
+    const TIME_GAP =10;
+    const timeSeconds = ref("00");
+    const timeTotalSeconds = ref(0);
+    const timeMinutes = ref("00");
    
 
     const currentTemp=ref(Constants.DEFAULTS_TEMP)
@@ -360,6 +367,8 @@ export default {
     const submitTaskRef = ref(null)
     const infoRef = ref(null)
     const scrollContainer = ref(null);
+    
+
 
 
     const mobileDrawer = ref(window.innerWidth<992?true:false)
@@ -385,6 +394,7 @@ export default {
         }
         if(localData['tour']===false){
           open.value = localData['tour'];
+          timeId = setInterval(setTimer, TIME_GAP*1000);
         }
       }
     });
@@ -411,15 +421,39 @@ export default {
     // Don't forget to clean up the event listener on component unmount
     onUnmounted(() => {
       document.removeEventListener('keydown', handleHighlight);
+      // document.re
+      clearInterval(timeId);
     });
 
 
     // Tour 
     const tourFinished = () => {
       console.log('Tour Finished');
+      if(localData['tour']!==false){
+          timeId = setInterval(setTimer, TIME_GAP*1000);
+        }
+      // setInterval(setTimer, TIME_GAP*1000);
       localData['tour']=false;
       localStorage.setItem(user_id.value, JSON.stringify(localData));
     };
+
+
+    // Timer
+    function setTimer() {
+
+      timeTotalSeconds.value+=TIME_GAP;
+      timeSeconds.value = pad(timeTotalSeconds.value % 60);
+      timeMinutes.value = pad(Math.floor(timeTotalSeconds.value / 60));
+    }
+
+    function pad(val) {
+      let valString = val + "";
+      if (valString.length < 2) {
+        return "0" + valString;
+      } else {
+        return valString;
+      }
+    }
 
 
     // Chat to bottom
@@ -940,7 +974,11 @@ export default {
         })
     }
 
-    return { messages, 
+    return { messages,
+      timeSeconds,
+      timeMinutes,
+      minWords,
+      maxWords, 
       userInput, 
       scenarioRef,
       noteRef,
