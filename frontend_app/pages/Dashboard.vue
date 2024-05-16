@@ -103,7 +103,8 @@
                           You
                         </div>
                         <!-- <el-tag size="small" :id="'user_question_tag_' + message.id">You</el-tag> -->
-                        <div :id="'user_question_' + message.id" style="white-space: pre-line">{{ message.text}}</div>
+                        <!-- style="white-space: pre-line"  -->
+                        <div :id="'user_question_' + message.id" v-html="message.text"></div>
                       </div>
 
                     </div>
@@ -114,7 +115,8 @@
                           Chatbot
                         </div>
                         <!-- <el-tag  :id="'ai_feedback_tag_' + message.id" size="small" type="success">Chatbot</el-tag> -->
-                        <div  :id="'ai_feedback_' + message.id" style="white-space: pre-line" >{{ message.text}}</div>
+                        <!-- style="white-space: pre-line"  -->
+                        <div  :id="'ai_feedback_' + message.id" style="word-wrap: break-word; white-space: pre-wrap; line-height:1.1" v-html="message.text"></div>
                         <!-- <el-tooltip :id="'icon_' + message.id" placement="bottom">
                           <template  #content> Copy </template>
                           <el-button :id="'button_' + message.id" size="small" type="info" plain  @click="handleCopiedButton" round >
@@ -136,29 +138,6 @@
                 </div>
               </el-scrollbar>
               <el-card ref="chatInputRef" class="bar">
-                <!-- <el-input
-                  id="prompt_input"
-                  class="prompt_input"
-                  name="prompt_input"
-                  v-model="userInput"
-                  placeholder="Type your message here..."
-                  @keyup.enter="sendMessage"
-                  @keydown.ctrl.a="handleHighlight"
-                  @keydown.meta.a="handleHighlight"
-                  @copy="handleCopy"
-                  @cut="handleCopy"
-                  @paste="handlePaste"
-                  @mouseup="handleMouseUp"
-                  @focusin="startFocusTime"
-                  @focusout="endFocusTime"
-                  clearable
-                >
-                  <template #append>
-                    <el-button class="submit-chatbot" @click="sendMessage">
-                      <Promotion style="width:24px; vertical-align:middle;  padding:0;" />
-                    </el-button>
-                  </template>
-                </el-input> -->
                 <el-input
                   type="textarea"
                   :autosize="{ minRows: 1 , maxRows: 6}"
@@ -193,43 +172,48 @@
         </el-button>
 
         <!-- @closed="scrollToBottom()"  -->
-        <el-drawer class="inner-drawer" @open="scrollToBottom();" v-model="drawer" size="80%" title="Airport Helper" >
+        <el-drawer class="inner-drawer" @open="scrollToBottom();" v-model="drawer" size="80%" title="Task AI" >
            <div class="m-chat-area">
               <el-scrollbar class="scroll-bar" ref="scrollContainer">
-                <div  v-for="message in messages" :key="message.id" class="message">
+                <div v-for="message in messages" :key="message.id" class="message">
                   <el-card>
                     <div class="dialogue"  v-if="message.sender === 'user'" :id="'user_question_block_' + message.id" @mouseup="handleMouseUp" @copy="handleCopy">
                       <el-avatar :size="28" class="avatar user-bg" icon="UserFilled" />
                       <div>
-                        <div class="user-title"  :id="'user_question_tag_' + message.id">
+                         <div class="user-title"  :id="'user_question_tag_' + message.id">
                           You
                         </div>
                         <!-- <el-tag size="small" :id="'user_question_tag_' + message.id">You</el-tag> -->
-                        <div :id="'user_question_' + message.id" style="white-space: pre-line">{{ message.text }}</div>
-                         
+                        <!-- style="white-space: pre-line"  -->
+                        <div :id="'user_question_' + message.id" v-html="message.text"></div>
                       </div>
 
                     </div>
-                    <div class="dialogue" v-else :id="'ai_feedback_block_' + message.id"   @mouseup="handleMouseUp" @copy="handleCopy">
-                      <el-avatar :size="28" class="avatar bot-bg"  icon="ChatLineRound" />
+                    <div  class="dialogue" v-else :id="'ai_feedback_block_' + message.id"   @mouseup="handleMouseUp" @copy="handleCopy">
+                      <el-avatar :size="28" class="avatar bot-bg"   icon="ChatLineRound" />
                       <div>
-                        <div class="user-title" :id="'ai_feedback_tag_' + message.id" >
+                        <div class="user-title"  :id="'ai_feedback_tag_' + message.id" >
                           Chatbot
                         </div>
-                        <div  :id="'ai_feedback_' + message.id" style="white-space: pre-line">{{ message.text }} </div>
-                      
+                        <!-- <el-tag  :id="'ai_feedback_tag_' + message.id" size="small" type="success">Chatbot</el-tag> -->
+                        <!-- style="white-space: pre-line"  -->
+                        <div  :id="'ai_feedback_' + message.id" style="word-wrap: break-word; white-space: pre-wrap; line-height:1.1" v-html="message.text"></div>
+                        <!-- <el-tooltip :id="'icon_' + message.id" placement="bottom">
+                          <template  #content> Copy </template>
+                          <el-button :id="'button_' + message.id" size="small" type="info" plain  @click="handleCopiedButton" round >
+                          <el-icon :id="'button_' + message.id" ><CopyDocument :id="'button_' + message.id" /> </el-icon>
+                        </el-button>
+                        </el-tooltip> -->
                         <!-- <span v-if="isLastChatbotMessage(message)">
                           <el-button :disabled="MIN_TEMP>=currentTemp" @click="resentMessage(false)" size="small" type="info" plain round>
-                            Retry with more concreteness idea!
+                           Give me more various idea!
                           </el-button>
                           <el-button :disabled="MAX_TEMP<=currentTemp" @click="resentMessage(true)" size="small" type="info" plain round>
-                            Retry with more abstract idea!
+                            Give me more cautious idea!
                           </el-button>
 
-                        </span> -->
-
+                        </span>                      -->
                       </div>
-                     
                     </div>
                   </el-card>
                 </div>
@@ -315,6 +299,7 @@
 <script>
 import Constants from "../constant/Constants.vue";
 import axios from "axios";
+import {marked} from "marked";
 import { ref, watch, nextTick } from 'vue';
 import { onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
@@ -501,7 +486,7 @@ export default {
         messages.value = data.map( (chat)=>{
           return {
             id: chat.created_at,
-            text: chat.response,
+            text: marked(chat.response),
             sender: chat.role,
           }
         
@@ -519,7 +504,7 @@ export default {
       if (userInput.value.trim()) {
         // messages.value.push({ id: Date.now(), text: userInput.value, sender: 'user' });
         // Here you'd typically send the message to your backend for processing
-        createMessage(userInput.value,'user');
+        createMessage(marked(userInput.value),'user');
         getResponse(userInput.value);
         userInput.value = ''; // Clear input after sending
         console.log('User Prompt Time:', (promptEndTime-promptStartTime)/1000);
@@ -638,7 +623,7 @@ export default {
         } 
       const { data } = await axios.post(api_url, postData);
       console.log(data);
-      createMessage(data.response, "assistant");
+      createMessage(marked(data.response), "assistant");
     }
 
 
@@ -961,7 +946,7 @@ export default {
       else{
         currentTemp.value-=0.1;
       }
-      createMessage(RESENT_PROMPT,'user')
+      createMessage(marked(RESENT_PROMPT),'user')
       getResponse(RESENT_PROMPT)
     };
 
