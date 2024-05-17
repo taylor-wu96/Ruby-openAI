@@ -11,9 +11,18 @@ module RubyOpenAI
     plugin :public, root: 'dist'
     plugin :render
     plugin :halt
+    plugin :streaming
     # plugin :default_headers
     PRACTICAL_TASK = 'practical'
     CREATVIE_TASK = 'creative'
+    CREATVIE_TASK_PROMPT = '
+      Act as a Traveling advisor and provide technical insight on touring aspect suggestions.
+      Write in active voice to make sentences more engaging and easier to follow.
+      The audience who need to complete the creative writing task.
+      Must Keep the reply within 100 words.
+    '
+    TEST_LOREM = 'lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+    WELCOME_MESSAGE = 'Hello, I am your Task assistant. I have abundant traveling experiences, How can I help you today?'
     route do |r|
       r.get 'api' do
         response['Content-Type'] = 'application/json'
@@ -73,7 +82,7 @@ module RubyOpenAI
         end
         puts 'testable answer:', history_messages
 
-        response_data = ChatGptAPI.send_message(data['system_content'], history_messages, temp)
+        response_data = ChatGptAPI.send_message(CREATVIE_TASK_PROMPT, history_messages, temp)
         # puts 'Data: ', response_data
         chatbot_message = Message.create(chat_id: new_chat.id, role: 'assistant',
                                          response: response_data['choices'][0]['message']['content'])
@@ -99,6 +108,9 @@ module RubyOpenAI
                    else
                      Chat.first(user_id:)
                    end
+        if Message.where(chat_id: new_chat.id).all.empty?
+          Message.create(chat_id: new_chat.id, role: 'assistant', response: WELCOME_MESSAGE)
+        end
 
         Message.where(chat_id: new_chat.id).map(&:values).to_json
       end
@@ -283,6 +295,40 @@ module RubyOpenAI
         task_name = JSON.parse(task_body.body)['task']
         Task.create(task_name:, chat_id: new_chat.id, message_id: task_body.message_id,
                     receipt_handle: task_body.receipt_handle).attributes.to_json
+      end
+
+      r.on 'streaming' do
+        response.headers['Content-Type'] = 'text/event-stream'
+        response.headers['Last-Modified'] = Time.now.httpdate
+        response.status = 200
+        tmp = ''
+        stream do |out|
+          # %w[a b c d e f g].each do |v|
+          #   out << "data: #{v}\n\n"
+          #   sleep 1
+          # end
+          TEST_LOREM.split(' ').each do |v|
+            tmp += v + ' '
+            out << "data: #{tmp}\n\n"
+            sleep 0.05
+          end
+        end
+      end
+
+      r.get 'test-response' do
+        response['Content-Type'] = 'application/json'
+        response.status = 200
+        # history_messages = Message.where(chat_id: 1).map(&:values).map do |item|
+        #   {
+        #     role: item[:role],
+        #     content: item[:response]
+        #   }
+        history_messages = [{
+          role: 'user',
+          content: 'Can you help me to write a creative story in 2050 Japan?'
+        }]
+        response_data = ChatGptStreaming.make_request(CREATVIE_TASK_PROMPT, history_messages, 0.7)
+        print ' body:', response_data.body
       end
 
       # frontend api
