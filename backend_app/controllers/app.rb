@@ -2,6 +2,8 @@
 
 require 'roda'
 require 'json'
+require 'net/http'
+require 'uri'
 
 module RubyOpenAI
   # Backend web app controller
@@ -316,8 +318,11 @@ module RubyOpenAI
       end
 
       r.get 'test-response' do
-        response['Content-Type'] = 'application/json'
-        response.status = 200
+        response['Content-Type'] = 'text/event-stream'
+        response['Cache-Control'] = 'no-cache'
+        response['Connection'] = 'keep-alive'
+        # response['Content-Type'] = 'application/json'
+        # response.status = 200
         # history_messages = Message.where(chat_id: 1).map(&:values).map do |item|
         #   {
         #     role: item[:role],
@@ -327,7 +332,35 @@ module RubyOpenAI
           role: 'user',
           content: 'Can you help me to write a creative story in 2050 Japan?'
         }]
-        response_data = ChatGptStreaming.make_request(CREATVIE_TASK_PROMPT, history_messages, 0.7)
+
+        # stream(:keep_open) do |out|
+        #   sse_client.on_event do |event|
+        #     out << "data: #{event.data}\n\n"
+        #   end
+
+        #   sse_client.on_error do |error|
+        #     out << "event: error\ndata: #{error.message}\n\n"
+        #   end
+        # end
+        requests, uri = ChatGptStreaming.make_request(CREATVIE_TASK_PROMPT, history_messages, 0.7)
+        print 'requests:', requests
+        print 'uri:', uri
+        stream do |out|
+          Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+            http.request requests do |response|
+              # print 'response_now:', response.body
+              # out << "data: #{response.body.data}\n\n"
+
+              response.read_body do |chunk|
+                print 'chunk:', chunk
+                out << chunk
+                # out << "data: #{chunk}\n\n"
+              end
+            end
+            # http.request(requests)
+          end
+        end
+
         print ' body:', response_data.body
       end
 

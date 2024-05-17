@@ -34,14 +34,47 @@ module RubyOpenAI
     def self.make_request(system_content, history_messages, temperature)
       uri = URI.parse(API_ENDPOINT)
       requests = build_request(uri, system_content, history_messages, temperature)
-      print 'request:', requests
-      Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-        http.request requests do |response|
-          print 'From open Ai', response.read_body
-        end
-        # http.request(requests)
-      end
+      print 'request:', requests.to_hash
+
+      [requests, uri]
+
+      # Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      #   http.request requests do |response|
+      #     # print 'response_now:', response.body
+      #     ans = response.body
+      #     print 'response:', ans
+      #     #   response.read_body do |chunk|
+      #     #     # Handle the incoming chunk of data
+      #     #     # ans = JSON.parse(chunk.to_json)
+      #     #     chunk.gsub!(/^data:\s*/, '')
+      #     #     data = JSON.parse(chunk)
+      #     #     content = data.dig('choices', 0, 'delta', 'content')
+      #     #     print "Content: #{content}"
+
+      #     #     # print 'chunk:', ans
+      #     #     # handle_chunk(chunk)
+      #     #   end
+      #   end
+      #   # http.request(requests)
+      # end
     end
+
+    # def self.handle_chunk(chunk)
+    #   print 'chunk:', chunk
+    #   data = JSON.parse(chunk)
+    #   content = data.dig('choices', 0, 'delta', 'content') || ''
+
+    #   if content.empty?
+    #     # Handle other events if needed
+    #     puts "Event: #{data.inspect}"
+    #   else
+    #     # Handle the incoming content
+    #     puts "Content: #{content}"
+    #   end
+    # rescue JSON::ParserError
+    #   # Handle invalid JSON data
+    #   puts "Invalid JSON: #{chunk.inspect}"
+    # end
 
     # rubocop:disable Metrics/MethodLength
     def self.build_request_body(system_content, history_messages, temperature)
