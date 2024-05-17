@@ -16,12 +16,16 @@
           <el-row  :gutter="20">
             <el-col :xs="24" :sm="24" :md="24" :lg="13" :xl="13" class="task-area cloudy-glass">
               <el-card ref="scenarioRef" class="scenario">
-                <div class="scenario-title">
-                  <!-- Scenario -->
-                  Your Task
+                <div class="scenario-scroll">
+                  <div class="scenario-title">
+                    <!-- Scenario -->
+                    Your Task
+                  </div>
+                  <div  v-html="scenarioText">
+                  </div>
                 </div>
-                <div  v-html="scenarioText">
-                </div>
+
+             
               </el-card>
               <el-card ref="noteRef" class="note">
                 <el-scrollbar always max-height="100%" height="100%">
@@ -29,8 +33,6 @@
                   Your Answer
                   <el-text size="small" tag="i"> Enter the all of task in the following input field </el-text>
                 </div>
-
-                <!--  :autosize="{ minRows: 4, maxRows:10}" -->
                 <el-input
                   ref="textareaRef"
                   name="NoteArea"
@@ -50,25 +52,25 @@
                   @focusin="startFocusTime"
                   @focusout="endFocusTime"
                 />
-                <div class="text-area_info">
-                  <el-text> {{ textAreaWordCount }} / words.( {{minWords}}~{{maxWords}} ) </el-text>
-                  <el-text> Time Spend: {{ timeMinutes}}:{{ timeSeconds}} sec ( 10~15 min )  </el-text>
-                  <!-- <el-button size="small" type="danger"  @click="clearTextArea" round >
-                  Reset  <DeleteFilled  style="width:20px; padding:2px 0px 2px 4px;"/> </el-button> -->
-                </div>
-                <el-form ref="submitTaskRef"  label-width="auto" >
-                    <div class="submit_block">
-                      <el-form-item label="I have finished the answer">
-                        <!-- active-icon="Check" inactive-icon="Close" -->
-                          <el-switch v-model="hasFinishTask" :before-change="checkTaskFinish"  />
-                        </el-form-item>
-                        <el-form-item>
-                          <el-button  type="info"  :disabled="!hasFinishTask" round @click="onSubmitTask">Submit</el-button>
-                        </el-form-item>
-
-                    </div>
+                <div class="note_panel">
+                  <div class="text-area_info">
+                    <div><el-icon  size="small"><Finished /></el-icon> Word: {{ textAreaWordCount }} ( {{minWords}}~{{maxWords}} ) </div>
+                    <div> <el-icon size="small"><Timer /></el-icon> Time: {{ timeMinutes}}:{{ timeSeconds}} ( 10~15 min )  </div>
+                  </div>
+                  <el-form ref="submitTaskRef"  label-width="auto" >
+                      <div class="submit_block">
+                        <el-form-item label="I have finished">
+                          <!-- active-icon="Check" inactive-icon="Close" -->
+                            <el-switch v-model="hasFinishTask" :before-change="checkTaskFinish"  />
+                          </el-form-item>
+                          <el-form-item>
+                            <el-button  type="info" :disabled="!hasFinishTask" round @click="onSubmitTask">Submit</el-button>
+                          </el-form-item>
+                      </div>
+                  </el-form>
                   
-                </el-form>
+                </div>
+
                 <!-- <p>{{highlightedText}}</p> -->
 
                 </el-scrollbar>
@@ -1009,14 +1011,14 @@ export default {
 /* Add your styles here scoped */
 
 *{
-  /* font: 'Arial' !important; */
+  padding: 0;
+  margin: 0;
   -webkit-font-smoothing: antialiased;
-  /* color: #2c2c2cdf !important; */
 }
 
 .chat-area,
 .task-area {
-  margin: 10px 10px;
+  margin: 10px;
   max-height: calc(100vh - 100px); /* Adjust the value based on your layout */
   height:calc(100vh - 100px) ;
 }
@@ -1065,17 +1067,17 @@ export default {
 }
 
 .task-area {
-  display: flex; /* Added */
+  display: flex !important; 
   flex-direction: column; /* Added */
   align-items: center;
-  flex: 1; 
-  /* Take up remaining space */
+  flex: 1;  
+  /* gap: 10px; */
 
   /* padding-right: 20px; Add some spacing between columns */
 }
 
 .chat-area {
-  flex: 2;
+  /* flex: 2; */
   position: relative;
   padding-bottom: 150px !important;
   }
@@ -1095,21 +1097,39 @@ export default {
 .note {
   position: relative;
   box-sizing: border-box;
-  max-height: 48.5%;
-  min-height: 45%;
+  /* flex: 1; */
+  flex-grow: 1;
+  height: 50%;
+  padding: 12px;
+  width: 100%;
+
+}
+.scenario>>>.el-card__body{
+  overflow: hidden;
   height: 100%;
-  padding: 10px;
-  /* overflow: scroll; */
-  /* flex: 1; Added */
-  overflow-x: hidden; /* Hide horizontal scrollbar */
-  overflow-y: scroll; /* Add vertical scrollbar */
+  padding: 0;
 }
+.scenario-scroll{
+  padding: 0;
+  height: 100%;
+  overflow-y: scroll; 
+  padding-bottom:60px ;
+}
+/* scenario-scroll */
+.note{
+  overflow-y: scroll; 
+}
+
+
 .scenario{
-  padding-right: 30px;
-  /* scrollbar-color: #dcdfe6 #5F6367; */
-  /* scrollbar-gutter: stable both-edges; */
+  /* padding-right: 30px; */
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+  overflow: hidden;
+  padding: 10px 20px;
 }
-.scenario::after {
+/* .scenario::after {
   content: "» » » »";
   display: block;
   width: 10px;
@@ -1119,14 +1139,42 @@ export default {
   font-size: 1.5rem;
   writing-mode: vertical-rl;
   text-orientation: mixed;
+} */
+.scenario::before{
+  content: "";
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 80px;
+  background: linear-gradient(rgba(179, 179, 179, 0.001), rgb(255, 255, 255)) ;
+  position: absolute;
+  z-index: 1;
+}
+.note_panel{
+  display: flex;
+  /* align-items: center; */
+  margin-top: 8px;
+  justify-content: space-between;
 }
 
 .text-area_info{
   display: flex;
+  flex-direction: column;
+  align-items: baseline;
+  justify-items: start;
+  text-align: left;
+
+}
+.text-area_info>div{
+  font-size: 0.8rem;
+  display: block;
+  line-height: 1.6;
+  color: #353535;
+  /* padding: 2px 0; */
+  margin: 0;
+  display: flex;
   align-items: center;
-  gap: 20px;
-  /* justify-content: space-between; */
-  margin-top: 8px;
 }
 .chat-title{
   display: flex;
@@ -1266,12 +1314,15 @@ export default {
 }
 
 .submit_block{
-
   display: flex;
-  height: 100%;
-  justify-content: end;
-  align-items: center;
-  gap:0 12px;
+  flex-direction:column ;
+  /* justify-content: end; */
+  align-items: flex-end;
+}
+.submit_block>>>.el-form-item{
+  /* padding: 0; */
+  margin: 0;
+  margin-bottom:4px;
 }
 
 .mobile-drawer{
