@@ -10,14 +10,7 @@
             </div> 
             <el-button style="margin-left:8px;" round ref="infoRef" size="small" type="info" icon="InfoFilled" @click="open = true">
               Help
-            </el-button>
-            <el-button style="margin-left:8px;" round size="small" type="info" icon="Refresh" @click="streamingResponse">
-             Test API
-            </el-button>
-            <el-text>
-              Response: {{streaming_response}}
-            </el-text>
-           
+            </el-button>   
              </el-row>
           <el-row  :gutter="20">
             <el-col :xs="24" :sm="24" :md="24" :lg="13" :xl="13" class="task-area cloudy-glass">
@@ -365,8 +358,6 @@ export default {
     const open = ref(true)
     let localData ={}
 
-    // streaming response
-    const streaming_response = ref('')
 
 
     watchEffect(async () => {
@@ -508,12 +499,17 @@ export default {
     
     }
 
-    const sendMessage = () => {
+    const sendMessage = async() => {
       if (userInput.value.trim()) {
         // messages.value.push({ id: Date.now(), text: userInput.value, sender: 'user' });
         // Here you'd typically send the message to your backend for processing
         createMessage(marked(userInput.value),'user');
-        getResponse(userInput.value);
+
+        // API for none streaming version
+        // getResponse(userInput.value);
+        // API for streaming version
+        await streamingResponse();
+
         userInput.value = ''; // Clear input after sending
         // console.log('User Prompt Time:', (promptEndTime-promptStartTime)/1000);
         promptStartTime=0;
@@ -604,21 +600,46 @@ export default {
 
   let controller = null; 
   const streamingResponse = async () => {
-    let api_url = "/test-response";
+    let streaming_message = '';
+    let api_url = "/openAI-streaming";
     if(user_id.value !== 'anonymous'){
-      api_url = `/test-response?user_id=${user_id.value}`
+      api_url = `/openAI-streaming?user_id=${user_id.value}`
       ;
     } 
-    streaming_response.value = '';
     controller = new AbortController();
     const signal = controller.signal;
     let output_response = '';
     try {
-      
+      // messages.value = data.map( (chat)=>{
+      //     return {
+      //       id: chat.created_at,
+      //       text: marked(chat.response),
+      //       sender: chat.role,
+      //     });
+
+      const receivedMessage ={
+        id: Date.now(),
+        text: '',
+        sender: 'assistant',
+      };
+      messages.value.push(receivedMessage);
+
+
       const response = await fetch(api_url,
       {
-        method: "GET",
-      }, signal);
+        method: "POST",
+        headers: {
+        "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message_content: userInput.value,
+          system_temp: currentTemp.value,
+          role: "user",
+        }),
+        signal,
+      });
+      userInput.value = '';
+      // disabled the sender button
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
 
@@ -634,19 +655,21 @@ export default {
         const parsedLines = lines.filter((line) => line.trim() !== ''  && !line.includes("[DONE]"))
                                 .map((line)=>line.replace(/^data: /, "").trim())
                                 .map((line) => JSON.parse(line));
-
         // console.log('Streaming Response:', parsedLines);
         for ( const parsedLine of parsedLines){
           const {choices} = parsedLine;
           const { delta } = choices[0];
           const { content } = delta;
-          streaming_response.value += content;
-          console.log('Streaming Response:', output_response);
+          if(content){
+            streaming_message += content;
+            messages.value[messages.value.length - 1]["text"] = marked(streaming_message);
+          }         
+          // console.log('Store to messages:', messages.value[messages.value.length - 1]);
+          // console.log('Streaming Response:', output_response);
           // createMessage(marked(parsedLine.response), "assistant");
         }
 
       }
-
 
       // console.log('Streaming Response:', data);
     } catch (error) {
@@ -658,6 +681,27 @@ export default {
     }finally{
       controller = null;
       // TODO: send API to backend
+      await storeMessage(streaming_message,'assistant');
+    }
+  }
+
+  const storeMessage = async (message,role) => {
+    try{
+      const postData = {
+        message_content: message,
+        system_temp: currentTemp.value,
+        role: role,
+      };
+      console.log('Post Data:', postData);
+        let api_url = "/message";
+        if(user_id.value !== 'anonymous'){
+          api_url = `/message?user_id=${user_id.value}`;
+        } 
+      const { data } = await axios.post(api_url, postData);
+      console.log('Store Message:', data);
+
+    }catch(error){
+      console.error('Failed to store message:', error);
     }
   }
 
@@ -682,7 +726,7 @@ export default {
       const postData = {
         message_content: message,
         system_temp: currentTemp.value,
-        system_content: "user",
+        role: "user",
       };
         let api_url = "/openai";
         if(user_id.value !== 'anonymous'){
@@ -1028,8 +1072,6 @@ export default {
 
     return { messages,
       timeSeconds,
-      streamingResponse,
-      streaming_response,
       timeMinutes,
       minWords,
       maxWords, 

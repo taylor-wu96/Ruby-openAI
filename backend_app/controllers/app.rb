@@ -140,6 +140,7 @@ module RubyOpenAI
         Behavior.where(chat_id:).map(&:values).to_json
       end
 
+      # old version of random task
       # r.get 'random-task' do
       #   # print Task.all
       #   # print Task.all.map(:task_name)
@@ -171,6 +172,7 @@ module RubyOpenAI
       #     end
       #   end
       # end
+
       r.post 'task' do
         response['Content-Type'] = 'application/json'
         response.status = 200
@@ -299,16 +301,13 @@ module RubyOpenAI
                     receipt_handle: task_body.receipt_handle).attributes.to_json
       end
 
+      # basic streaming
       r.on 'streaming' do
         response.headers['Content-Type'] = 'text/event-stream'
         response.headers['Last-Modified'] = Time.now.httpdate
         response.status = 200
         tmp = ''
         stream do |out|
-          # %w[a b c d e f g].each do |v|
-          #   out << "data: #{v}\n\n"
-          #   sleep 1
-          # end
           TEST_LOREM.split(' ').each do |v|
             tmp += v + ' '
             out << "data: #{tmp}\n\n"
@@ -317,52 +316,96 @@ module RubyOpenAI
         end
       end
 
-      r.get 'test-response' do
+      # streaming with openAI api in frontend assign prompt
+      r.post 'openAI-streaming' do
         response['Content-Type'] = 'text/event-stream'
         response['Cache-Control'] = 'no-cache'
         response['Connection'] = 'keep-alive'
-        # response['Content-Type'] = 'application/json'
-        # response.status = 200
-        # history_messages = Message.where(chat_id: 1).map(&:values).map do |item|
-        #   {
-        #     role: item[:role],
-        #     content: item[:response]
-        #   }
-        history_messages = [{
-          role: 'user',
-          content: 'Can you help me to write a creative story in 2050 Japan?'
-        }]
 
-        # stream(:keep_open) do |out|
-        #   sse_client.on_event do |event|
-        #     out << "data: #{event.data}\n\n"
-        #   end
+        user_id = r.params['user_id'] || 'anonymous'
+        data = JSON.parse(r.body.read)
 
-        #   sse_client.on_error do |error|
-        #     out << "event: error\ndata: #{error.message}\n\n"
-        #   end
-        # end
-        requests, uri = ChatGptStreaming.make_request(CREATVIE_TASK_PROMPT, history_messages, 0.7)
-        print 'requests:', requests
-        print 'uri:', uri
+        temp = data['temp'] || 0.7
+        new_chat = if Chat.first(user_id:).nil?
+                     Chat.create(user_id:)
+                   else
+                     Chat.first(user_id:)
+                   end
+
+        Message.create(chat_id: new_chat.id, role: 'user', response: data['message_content'])
+
+        history_messages = Message.where(chat_id: new_chat.id).map(&:values).map do |item|
+          {
+            role: item[:role],
+            content: item[:response]
+          }
+        end
+        requests, uri = ChatGptStreaming.make_request(CREATVIE_TASK_PROMPT, history_messages, temp)
         stream do |out|
           Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
             http.request requests do |response|
-              # print 'response_now:', response.body
-              # out << "data: #{response.body.data}\n\n"
-
               response.read_body do |chunk|
-                print 'chunk:', chunk
                 out << chunk
-                # out << "data: #{chunk}\n\n"
               end
             end
-            # http.request(requests)
           end
         end
-
-        print ' body:', response_data.body
       end
+
+      r.post 'message' do
+        response['Content-Type'] = 'application/json'
+        response.status = 200
+        user_id = r.params['user_id'] || 'anonymous'
+        data = JSON.parse(r.body.read)
+        print 'data to store:', data
+        role = data['role'] || 'user'
+        new_chat = if Chat.first(user_id:).nil?
+                     Chat.create(user_id:)
+                   else
+                     Chat.first(user_id:)
+                   end
+        Message.create(chat_id: new_chat.id, role:, response: data['message_content'])
+        Message.where(chat_id: new_chat.id).map(&:values).to_json
+      end
+
+      # streaming with openAI api in fixed prompt
+      # r.get 'test-response' do
+      #   response['Content-Type'] = 'text/event-stream'
+      #   response['Cache-Control'] = 'no-cache'
+      #   response['Connection'] = 'keep-alive'
+      #   history_messages = [{
+      #     role: 'user',
+      #     content: 'Can you help me to write a creative story in 2050 Japan?'
+      #   }]
+
+      #   # stream(:keep_open) do |out|
+      #   #   sse_client.on_event do |event|
+      #   #     out << "data: #{event.data}\n\n"
+      #   #   end
+
+      #   #   sse_client.on_error do |error|
+      #   #     out << "event: error\ndata: #{error.message}\n\n"
+      #   #   end
+      #   # end
+      #   requests, uri = ChatGptStreaming.make_request(CREATVIE_TASK_PROMPT, history_messages, 0.7)
+      #   print 'requests:', requests
+      #   print 'uri:', uri
+      #   stream do |out|
+      #     Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      #       http.request requests do |response|
+      #         # print 'response_now:', response.body
+      #         # out << "data: #{response.body.data}\n\n"
+
+      #         response.read_body do |chunk|
+      #           print 'chunk:', chunk
+      #           out << chunk
+      #           # out << "data: #{chunk}\n\n"
+      #         end
+      #       end
+      #       # http.request(requests)
+      #     end
+      #   end
+      # end
 
       # frontend api
       r.public

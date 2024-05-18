@@ -7,29 +7,11 @@ require 'dotenv'
 
 # Module to interact with OpenAI's API
 module RubyOpenAI
-  # Custom error classes
-  # module Errors
-  #   class NotFound < StandardError; end
-  #   class Unauthorized < StandardError; end
-  # end
-
-  # # HTTP error mappings
-  # HTTP_ERROR = {
-  #   401 => Errors::Unauthorized,
-  #   404 => Errors::NotFound
-  # }.freeze
-
   # Class for interfacing with ChatGPT API
   class ChatGptStreaming
     Dotenv.load
     API_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
     API_KEY = ENV['OPENAI_API_KEY']
-
-    # def self.send_message(system_content, history_messages, temperature)
-    #   response = make_request(system_content, history_messages, temperature)
-    #   handle_errors(response)
-    #   JSON.parse(response.body)
-    # end
 
     def self.make_request(system_content, history_messages, temperature)
       uri = URI.parse(API_ENDPOINT)
@@ -59,27 +41,8 @@ module RubyOpenAI
       # end
     end
 
-    # def self.handle_chunk(chunk)
-    #   print 'chunk:', chunk
-    #   data = JSON.parse(chunk)
-    #   content = data.dig('choices', 0, 'delta', 'content') || ''
-
-    #   if content.empty?
-    #     # Handle other events if needed
-    #     puts "Event: #{data.inspect}"
-    #   else
-    #     # Handle the incoming content
-    #     puts "Content: #{content}"
-    #   end
-    # rescue JSON::ParserError
-    #   # Handle invalid JSON data
-    #   puts "Invalid JSON: #{chunk.inspect}"
-    # end
-
     # rubocop:disable Metrics/MethodLength
     def self.build_request_body(system_content, history_messages, temperature)
-      # history_messages.
-      # 'gpt-3.5-turbo'
       puts 'test:', JSON.dump(
         {
           'model' => 'gpt-4o',
