@@ -2,7 +2,6 @@
   <div id="app">
     <el-container style="height: 100vh;">
       <el-container class="dashboard" style="height:100%">
-        <!-- <el-header>ChatGPT-like Chatbot</el-header> -->
         <el-main>
           <el-row :gutter="20" class="brand-area">
             <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px; margin-right: 10px;" /> 
@@ -12,20 +11,24 @@
             <el-button style="margin-left:8px;" round ref="infoRef" size="small" type="info" icon="InfoFilled" @click="open = true">
               Help
             </el-button>
+            <el-button style="margin-left:8px;" round size="small" type="info" icon="Refresh" @click="streamingResponse">
+             Test API
+            </el-button>
+            <el-text>
+              Response: {{streaming_response}}
+            </el-text>
+           
              </el-row>
           <el-row  :gutter="20">
             <el-col :xs="24" :sm="24" :md="24" :lg="13" :xl="13" class="task-area cloudy-glass">
               <el-card ref="scenarioRef" class="scenario">
                 <div class="scenario-scroll">
                   <div class="scenario-title">
-                    <!-- Scenario -->
                     Your Task
                   </div>
                   <div  v-html="scenarioText">
                   </div>
                 </div>
-
-             
               </el-card>
               <el-card ref="noteRef" class="note">
                 <el-scrollbar always max-height="100%" height="100%">
@@ -362,6 +365,9 @@ export default {
     const open = ref(true)
     let localData ={}
 
+    // streaming response
+    const streaming_response = ref('')
+
 
     watchEffect(async () => {
       // ...
@@ -369,11 +375,11 @@ export default {
       localData['user_id'] = user_id.value
       if (!localStorage.getItem(user_id.value)) {
         localStorage.setItem(user_id.value, JSON.stringify(localData));
-        console.log('Local Data:', localData);
+        // console.log('Local Data:', localData);
       } else {
         const data = await localStorage.getItem(user_id.value);
         localData = JSON.parse(data);
-        console.log('Local Data:', localData);
+        // console.log('Local Data:', localData);
         textArea.value = localData['storage_notes']||'';
         if(textArea.value){
           previousCharacterCount = textArea.value.length;
@@ -415,7 +421,7 @@ export default {
 
     // Tour 
     const tourFinished = () => {
-      console.log('Tour Finished');
+      // console.log('Tour Finished');
       if(localData['tour']!==false){
           timeId = setInterval(setTimer, TIME_GAP*1000);
         }
@@ -509,7 +515,7 @@ export default {
         createMessage(marked(userInput.value),'user');
         getResponse(userInput.value);
         userInput.value = ''; // Clear input after sending
-        console.log('User Prompt Time:', (promptEndTime-promptStartTime)/1000);
+        // console.log('User Prompt Time:', (promptEndTime-promptStartTime)/1000);
         promptStartTime=0;
         promptEndTime=0;
       }
@@ -531,7 +537,7 @@ export default {
       }
       try {
         const { data } = await axios.post(api_url, behavior);
-        console.log('Response Behavior', data);
+        // console.log('Response Behavior', data);
       } catch (error) {
         console.error('Failed to send behavior:', error);
         // Handle specific error scenarios here if needed
@@ -546,8 +552,8 @@ export default {
         api_url = `/random-task?user_id=${user_id.value}`;
       } 
       const { data } = await axios.get(api_url);
-      console.log('Task:', data);
-      console.log('Task:', data.task_name);
+      // console.log('Task:', data);
+      // console.log('Task:', data.task_name);
       if(data.task_name==='creative'){
         scenarioText.value = Constants.CREATIVE;
       }
@@ -596,6 +602,65 @@ export default {
 
   }
 
+  let controller = null; 
+  const streamingResponse = async () => {
+    let api_url = "/test-response";
+    if(user_id.value !== 'anonymous'){
+      api_url = `/test-response?user_id=${user_id.value}`
+      ;
+    } 
+    streaming_response.value = '';
+    controller = new AbortController();
+    const signal = controller.signal;
+    let output_response = '';
+    try {
+      
+      const response = await fetch(api_url,
+      {
+        method: "GET",
+      }, signal);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+
+      while(true){
+        const {done, value} = await reader.read();
+        if(done){
+          break;
+        }
+        const chunk = decoder.decode(value);
+
+        const lines = chunk.split("\n");
+        // console.log('Streaming Lines:', lines);
+        const parsedLines = lines.filter((line) => line.trim() !== ''  && !line.includes("[DONE]"))
+                                .map((line)=>line.replace(/^data: /, "").trim())
+                                .map((line) => JSON.parse(line));
+
+        // console.log('Streaming Response:', parsedLines);
+        for ( const parsedLine of parsedLines){
+          const {choices} = parsedLine;
+          const { delta } = choices[0];
+          const { content } = delta;
+          streaming_response.value += content;
+          console.log('Streaming Response:', output_response);
+          // createMessage(marked(parsedLine.response), "assistant");
+        }
+
+      }
+
+
+      // console.log('Streaming Response:', data);
+    } catch (error) {
+      if(signal.aborted){
+        console.error('Request Aborted:', error);
+      }else{
+        console.error('Failed to Streaming:', error);
+      }
+    }finally{
+      controller = null;
+      // TODO: send API to backend
+    }
+  }
+
     
 
     //Create a message
@@ -624,7 +689,7 @@ export default {
           api_url = `/openai?user_id=${user_id.value}`;
         } 
       const { data } = await axios.post(api_url, postData);
-      console.log(data);
+      // console.log(data);
       createMessage(marked(data.response), "assistant");
     }
 
@@ -644,7 +709,7 @@ export default {
        
         if(previousCharacterCount ===inputValue.length-1 || previousCharacterCount ===inputValue.length+1){
           characterRevisionCount+=1;
-          console.log('User Character Modifying :', characterRevisionCount);
+          // console.log('User Character Modifying :', characterRevisionCount);
         }
         previousCharacterCount = textArea.value.length;
         textArea.value = inputValue;
@@ -657,7 +722,7 @@ export default {
         // If the trimmed inputValue is empty, set word count to 0, else to the length of the words array
         textAreaWordCount.value = inputValue.trim() ? words.length : 0;
         if (previousWordCount !== textAreaWordCount.value) {
-          console.log('Word Add/Remove:', inputValue);
+          // console.log('Word Add/Remove:', inputValue);
           sendBehavior({
             id: Date.now(),
             content: inputValue,
@@ -669,11 +734,11 @@ export default {
         if(previousWordCount === textAreaWordCount.value-1){
          
           wordEditingCount+=1;
-          console.log('User Manual Modifying :', wordEditingCount);
+          // console.log('User Manual Modifying :', wordEditingCount);
 
         }else if(previousWordCount > textAreaWordCount.value){
           wordDeletingCount+=previousWordCount - textAreaWordCount.value;
-          console.log('User Manual Deleting :', wordDeletingCount);
+          // console.log('User Manual Deleting :', wordDeletingCount);
         }
         // else if(previousWordCount === textAreaWordCount.value){
         //   characterRevisionCount+=1;
@@ -735,11 +800,11 @@ export default {
       // console.log(targetElement.id);
       const messageId = targetElement.id.split('_')[1]; // Extract the message ID from the parent element's ID
       const aiResponseElement = document.getElementById(`ai_feedback_${messageId}`);
-      console.log('Response element:', aiResponseElement);
+      // console.log('Response element:', aiResponseElement);
       const copiedText = aiResponseElement.textContent;
-      console.log('Copied Text:', copiedText);
+      // console.log('Copied Text:', copiedText);
 
-      console.log('Copied Button');
+      // console.log('Copied Button');
       sendBehavior({
         id: Date.now(),
         content: copiedText,
@@ -760,8 +825,8 @@ export default {
 
 
     const handleCopy = (e) => {
-      console.log(e.clipboardData.getData('text/plain'));
-      console.log('Copied Text:', window.getSelection().toString());
+      // console.log(e.clipboardData.getData('text/plain'));
+      // console.log('Copied Text:', window.getSelection().toString());
       const targetElementName = e.target.name||e.target.id||e.target.nodeName;
       sendBehavior({
         id: Date.now(),
@@ -775,7 +840,7 @@ export default {
 
     const handlePaste = async (e) => {
       const pastedText = await e.clipboardData.getData('text');
-      console.log('Pasted Text:', pastedText);
+      // console.log('Pasted Text:', pastedText);
       const targetElementName = e.target.name||e.target.id||e.target.nodeName;
       sendBehavior({
         id: Date.now(),
@@ -800,7 +865,7 @@ export default {
         }
         //  console.log('select:', selectedText);
         if (selectedText) {
-          console.log('Selected Text:', selectedText);
+          // console.log('Selected Text:', selectedText);
           const targetElementName = e.target.name||e.target.id||e.target.nodeName;
           sendBehavior({
             id: Date.now(),
@@ -815,7 +880,7 @@ export default {
     };
 
     const handleMouseUp = (e) => {
-      console.log('Mouse Up');
+      // console.log('Mouse Up');
 
       let selectedText = '';
       // Check if the event's target is the textarea
@@ -829,7 +894,7 @@ export default {
       }
       if (selectedText !== '') {
         // Do something with the selected text
-        console.log('Highlight Text:', selectedText);
+        // console.log('Highlight Text:', selectedText);
         const targetElementName = e.target.name||e.target.id||e.target.nodeName;
         // targetElementName.split('_');
         sendBehavior({
@@ -855,7 +920,7 @@ export default {
 
     const endFocusTime = (e) => {
       focusTimeEnd = new Date().getTime();
-      console.log('Time Spent:', (focusTimeEnd - focusTimeStart) / 1000);
+      // console.log('Time Spent:', (focusTimeEnd - focusTimeStart) / 1000);
       highlightedText.value='Focus Time Spent:'+ (focusTimeEnd - focusTimeStart) / 1000
       const targetElementName = e.target.name||e.target.id||e.target.nodeName;
       sendBehavior({
@@ -870,7 +935,7 @@ export default {
 
     document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      console.log('User is focused on the page');
+      // console.log('User is focused on the page');
       if(focus_leave===0){
         sendBehavior({
             id: Date.now(),
@@ -894,7 +959,7 @@ export default {
        highlightedText.value='User is focused on the page'
 
     } else {
-      console.log('User has left the page');
+      // console.log('User has left the page');
       // Perform actions when the page is not in focus
       sendBehavior({
             id: Date.now(),
@@ -909,8 +974,8 @@ export default {
     
     window.addEventListener('resize', () => {
       if(window.innerWidth<992){
-        console.log("Window width:", window.innerWidth); 
-        console.log('Mobile View');
+        // console.log("Window width:", window.innerWidth); 
+        // console.log('Mobile View');
         mobileDrawer.value = true;
 
       }
@@ -957,12 +1022,14 @@ export default {
     const getIPFromAmazon=async()=> {
       fetch("https://checkip.amazonaws.com/").then(res => res.text()).then(data => {
         ipAddress.value = data;
-        console.log('IP: '+data)
+        // console.log('IP: '+data)
         })
     }
 
     return { messages,
       timeSeconds,
+      streamingResponse,
+      streaming_response,
       timeMinutes,
       minWords,
       maxWords, 
