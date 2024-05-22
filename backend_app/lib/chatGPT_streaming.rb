@@ -13,36 +13,26 @@ module RubyOpenAI
     API_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
     API_KEY = ENV['OPENAI_API_KEY']
 
-    def self.make_request(system_content, history_messages, temperature)
-      uri = URI.parse(API_ENDPOINT)
-      requests = build_request(uri, system_content, history_messages, temperature)
-      print 'request:', requests.to_hash
+    def initialize(system_content, history_messages, temperature)
+      @uri = URI.parse(API_ENDPOINT)
+      @requests = build_request(@uri, system_content, history_messages, temperature)
+    end
 
-      [requests, uri]
-
-      # Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-      #   http.request requests do |response|
-      #     # print 'response_now:', response.body
-      #     ans = response.body
-      #     print 'response:', ans
-      #     #   response.read_body do |chunk|
-      #     #     # Handle the incoming chunk of data
-      #     #     # ans = JSON.parse(chunk.to_json)
-      #     #     chunk.gsub!(/^data:\s*/, '')
-      #     #     data = JSON.parse(chunk)
-      #     #     content = data.dig('choices', 0, 'delta', 'content')
-      #     #     print "Content: #{content}"
-
-      #     #     # print 'chunk:', ans
-      #     #     # handle_chunk(chunk)
-      #     #   end
-      #   end
-      #   # http.request(requests)
-      # end
+    def streaming
+      Enumerator.new do |out|
+        Net::HTTP.start(@uri.hostname, @uri.port, use_ssl: true) do |http|
+          http.request @requests do |response|
+            response.read_body do |chunk|
+              print 'chunk:', chunk
+              out << chunk
+            end
+          end
+        end
+      end
     end
 
     # rubocop:disable Metrics/MethodLength
-    def self.build_request_body(system_content, history_messages, temperature)
+    def build_request_body(system_content, history_messages, temperature)
       puts 'test:', JSON.dump(
         {
           'model' => 'gpt-4o',
@@ -71,7 +61,7 @@ module RubyOpenAI
     end
     # rubocop:enable Metrics/MethodLength
 
-    def self.build_request(uri, system_content, history_messages, temperature)
+    def build_request(uri, system_content, history_messages, temperature)
       request = Net::HTTP::Post.new(uri)
       request.content_type = 'application/json'
       # request.content_type = 'text/event-stream'
@@ -80,7 +70,7 @@ module RubyOpenAI
       request
     end
 
-    def self.handle_errors(response)
+    def handle_errors(response)
       raise HTTP_ERROR[response.code.to_i], response.message if HTTP_ERROR.keys.include?(response.code.to_i)
     end
   end

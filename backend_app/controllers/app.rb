@@ -340,15 +340,9 @@ module RubyOpenAI
             content: item[:response]
           }
         end
-        requests, uri = ChatGptStreaming.make_request(CREATVIE_TASK_PROMPT, history_messages, temp)
+        streaming_gpt = ChatGptStreaming.new(CREATVIE_TASK_PROMPT, history_messages, temp)
         stream do |out|
-          Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-            http.request requests do |response|
-              response.read_body do |chunk|
-                out << chunk
-              end
-            end
-          end
+          streaming_gpt.streaming.each { |message| out << message }
         end
       end
 
