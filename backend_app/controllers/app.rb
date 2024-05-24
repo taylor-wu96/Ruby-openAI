@@ -17,14 +17,10 @@ module RubyOpenAI
     # plugin :default_headers
     PRACTICAL_TASK = 'practical'
     CREATVIE_TASK = 'creative'
-    CREATVIE_TASK_PROMPT = '
-      Act as a Traveling advisor and provide technical insight on touring aspect suggestions.
-      Write in active voice to make sentences more engaging and easier to follow.
-      The audience who need to complete the creative writing task.
-      Must Keep the reply within 100 words.
-    '
+    BASE_PROMPT = 'Act as a travel advisor and provide technical insight on travel aspect suggestions. Write in active voice to make sentences more engaging and easier to follow. The user you are responding to needs to complete a writing task about airports. As the strict advisor, you must keep your replies less than 100 words and briefer is better.'
     TEST_LOREM = 'lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
-    WELCOME_MESSAGE = 'Hello, I am your Task assistant. I have abundant traveling experiences, How can I help you today?'
+
+    WELCOME_MESSAGE = 'Hello, I am your AI assistant. I have abundant traveling experiences and knowledge. How can I help you today?'
     route do |r|
       r.get 'api' do
         response['Content-Type'] = 'application/json'
@@ -84,7 +80,7 @@ module RubyOpenAI
         end
         puts 'testable answer:', history_messages
 
-        response_data = ChatGptAPI.send_message(CREATVIE_TASK_PROMPT, history_messages, temp)
+        response_data = ChatGptAPI.send_message(BASE_PROMPT, history_messages, temp)
         # puts 'Data: ', response_data
         chatbot_message = Message.create(chat_id: new_chat.id, role: 'assistant',
                                          response: response_data['choices'][0]['message']['content'])
@@ -340,7 +336,7 @@ module RubyOpenAI
             content: item[:response]
           }
         end
-        streaming_gpt = ChatGptStreaming.new(CREATVIE_TASK_PROMPT, history_messages, temp)
+        streaming_gpt = ChatGptStreaming.new(BASE_PROMPT, history_messages, temp)
         stream do |out|
           streaming_gpt.streaming.each { |message| out << message }
         end
@@ -381,7 +377,7 @@ module RubyOpenAI
       #   #     out << "event: error\ndata: #{error.message}\n\n"
       #   #   end
       #   # end
-      #   requests, uri = ChatGptStreaming.make_request(CREATVIE_TASK_PROMPT, history_messages, 0.7)
+      #   requests, uri = ChatGptStreaming.make_request(BASE_PROMPT, history_messages, 0.7)
       #   print 'requests:', requests
       #   print 'uri:', uri
       #   stream do |out|

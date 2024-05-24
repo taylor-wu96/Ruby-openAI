@@ -247,39 +247,58 @@
         <!-- Tour Code -->
 
         <el-tour :show-close="false" @finish="tourFinished" :mask="{ color: '#000000df', }" v-model="open" type="default" >
-          <el-tour-step title="Introduction">
-            <h1>About this task: </h1>
-            <div>You have to finish a task in a given scenario. You have the right to unlimited use of the AI chatbot provided to you. It is very similar to ChatGPT and other tools you might have used.</div>
+          <el-tour-step title="Introduction" :content-style="{ maxWidth: '800px', width:'80%', padding:'40px'}">
+            <h2>About the Task: </h2>
+            <br/>
+            <div style="font-size: 1.125rem;line-height: 150%;font-weight: 400;">In this website You have to finish a task in a given scenario. We hope to leverage your ideas to help us come up with better plans within a limited time. <b>To reward the best participants, we will select the top three submissions based on completeness, originality, and clarity.</b> These top participants will receive additional rewards, which will be distributed through Prolific and communicated via private messages.</div>
+            <br/>
+            <div style="font-size: 1.125rem;line-height: 150%;font-weight: 400;">
+              <ul style="padding: 10px;">
+                <li>
+                  During the task, we encourage you to use your existing knowledge and  the AI assistant we provide. 
+                </li>
+                <li>
+                  Avoid searching for information on other websites.The accuracy of the facts is not our primary concern. 
+                </li>
+                <li>
+                  Instead, we are interested in whether your responses sufficiently reflect your own original ideas.
+                </li>
+              </ul>
+            </div>
+            <br/>
+            <div style="font-size: 1.125rem;line-height: 150%;font-weight: 400;">
+              Below, we will provide a step-by-step introduction to the website's UI to help you quickly navigate the system.
+            </div>
           </el-tour-step>
          
           <el-tour-step
             :target="scenarioRef?.$el"
             title="Scenario"
-            description="Here, you will see the details of the scenario for the task. You should finish the requirements of the scenario to finish the task. You might need to scroll down to see the full details."
+            description="Here, you will see the details of the scenario for the task. You should finish the requirements of the scenario to finish the task. You might need to scroll downto see the full details."
           />
           <el-tour-step
             :target="noteRef?.$el"
             title="Your Answer"
-            description="You can keep all of your notes and answer here before submission. You can see the word count below the text area."
+            description="You can keep all of your notes and answer here before submission. You can see the word count below the text area. We expect you to complete your responses in 10 minutes. You can track your elapsed time in the response area. If you exceed 10 minutes, we will give you a notice message."
 
           />
                <!-- placement="left-start" -->
           <el-tour-step
             :placement="!mobileDrawer?'left':'top-start'"
             :target="chatBotRef?.$el"
-            title="Airport Helper AI"
-            description="This Airport Helper is an AI chatbot service. It can help you generate or refine your ideas and words. You might need to scroll down to see the latest message."
+            title="Task AI"
+            description="Task AI is an AI chatbot service. We have used the current best AI tools, and trained it to the travel context you are working on.  It can help you generate or refine your ideas and words. You might need to scroll down to see the latest message."
           />
 
           <el-tour-step
             :target="chatInputRef?.$el"
             title="Question to AI"
-            description="Type the question you want to ask the AI here, and then click the send button to await a response."
+            description="Type the question you want to ask the AI assistant here, and then click the send button to await a response."
           />
           <el-tour-step
             :target="submitTaskRef?.$el"
             title="Submit Task"
-            description="After you finish the task, you should turn on the toggle to confirm that you have finished the answer, and then you can click the submit button."
+            description="After you finish the task, please click the toggle to confirm that you have finished the answer, and then you can click the submit button."
           />
 
           <el-tour-step
@@ -335,6 +354,8 @@ export default {
     const timeSeconds = ref("00");
     const timeTotalSeconds = ref(0);
     const timeMinutes = ref("00");
+    const missionTimeStamp = ref(0);
+
    
 
     const currentTemp=ref(Constants.DEFAULTS_TEMP)
@@ -1506,9 +1527,10 @@ export default {
 
 
 
-.el-tour__content{
-  max-width: 600px;
-  width: 80% !important;
+.el-tour .el-tour__content{
+  max-width: 800px;
+  width: 80% ;
+  padding: 100px;
 }
 
 .bar .submit-chatbot{
