@@ -157,8 +157,8 @@
 
                 >
                 </el-input>
-                <el-button class="submit-chatbot" @click="sendMessage">      
-                      <Promotion style="width:24px; vertical-align:middle;  padding:0;" />
+                <el-button class="submit-chatbot" :disabled="messageSending" :loading="messageSending" @click="sendMessage">      
+                      <Promotion v-show="!messageSending"  style="width:24px; vertical-align:middle;  padding:0;" />
                 </el-button>
               </el-card>
             </el-col>
@@ -237,8 +237,8 @@
                   @focusout="endFocusTime"
                 >
                 </el-input>
-                <el-button class="submit-chatbot" @click="sendMessage">      
-                      <Promotion style="width:24px; vertical-align:middle;  padding:0;" />
+                <el-button class="submit-chatbot" :disabled="messageSending" :loading="messageSending" @click="sendMessage">      
+                      <Promotion v-show="!messageSending"  style="width:24px; vertical-align:middle;  padding:0;" />
                 </el-button>
               </el-card>
             </div>
@@ -356,6 +356,10 @@ export default {
 
     let missionTimeStamp = 0;
 
+
+    // streaming variables
+    const messageSending = ref(false);
+
    
 
     const currentTemp=ref(Constants.DEFAULTS_TEMP)
@@ -456,11 +460,11 @@ export default {
       if( missionTimeLeft <= 0 && missionTimeLeft >= -TIME_GAP){
         ElNotification({
           title: 'Reminder',
-          message: "You have spend 10 minutes on the task.",
+          message: `You have spent ${Math.floor(MISSION_TIME/60)} minutes on the task.`,
           type: 'info',
         })
         // timeSeconds.value = 'You have spent 10 minutes'
-        timeSeconds.value = '<span style="color: rgb(190, 79, 79);">You have spent 10 minutes</span>';
+        timeSeconds.value = `<span style="color: rgb(190, 79, 79);"> You have spent ${Math.floor(MISSION_TIME/60)} minutes</span>`;
       }
       else if(missionTimeLeft >0){
         timeSeconds.value = pad(Math.floor(missionTimeLeft / 60)) +" : "+ pad(missionTimeLeft % 60);
@@ -637,6 +641,8 @@ export default {
 
   let controller = null; 
   const streamingResponse = async () => {
+    messageSending.value = true;
+    
     let streaming_message = '';
     let api_url = "/openAI-streaming";
     if(user_id.value !== 'anonymous'){
@@ -717,7 +723,8 @@ export default {
       }
     }finally{
       controller = null;
-      // TODO: send API to backend
+      messageSending.value = false;
+      // send API to backend
       await storeMessage(streaming_message,'assistant');
     }
   }
@@ -1109,6 +1116,7 @@ export default {
 
     return { messages,
       timeSeconds,
+      messageSending,
       minWords,
       maxWords, 
       userInput, 
@@ -1568,6 +1576,16 @@ export default {
   bottom: 14px;
   right: 12px;
 }
+
+.submit-chatbot >>>.el-icon.is-loading{
+  width:24px; 
+  height: auto;
+  vertical-align:middle;  
+  padding:0;
+  font-size: 1.1rem;
+}
+
+
 
 
 @media (min-width:992px) {
