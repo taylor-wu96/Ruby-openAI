@@ -51,7 +51,7 @@
                 <div class="note_panel">
                   <div class="text-area_info">
                     <div><el-icon  size="small"><Finished /></el-icon> Word: {{ textAreaWordCount }} ( {{minWords}}~{{maxWords}} ) </div>
-                    <div> <el-icon size="small"><Timer /></el-icon> Time: {{ timeMinutes}}:{{ timeSeconds}} ( 10~15 min )  </div>
+                    <div> <el-icon size="small"><Timer /></el-icon> Time Left: <span v-html="timeSeconds"></span> </div>
                   </div>
                   <el-form ref="submitTaskRef"  label-width="auto" >
                       <div class="submit_block">
@@ -351,10 +351,10 @@ export default {
 
     // Timer
     const TIME_GAP =10;
-    const timeSeconds = ref("00");
-    const timeTotalSeconds = ref(0);
-    const timeMinutes = ref("00");
-    const missionTimeStamp = ref(0);
+    const MISSION_TIME = 20;
+    const timeSeconds = ref("10:00");
+
+    let missionTimeStamp = 0;
 
    
 
@@ -445,10 +445,26 @@ export default {
 
     // Timer
     function setTimer() {
+    
+      if(missionTimeStamp===0){
+        missionTimeStamp=new Date().getTime()
+      };
+      let currentTime = new Date().getTime();
+      // console.log('Current Time:',missionTimeStamp,"  : ", currentTime);
 
-      timeTotalSeconds.value+=TIME_GAP;
-      timeSeconds.value = pad(timeTotalSeconds.value % 60);
-      timeMinutes.value = pad(Math.floor(timeTotalSeconds.value / 60));
+      let missionTimeLeft=MISSION_TIME-Math.floor((currentTime-missionTimeStamp)/1000);
+      if( missionTimeLeft <= 0 && missionTimeLeft >= -TIME_GAP){
+        ElNotification({
+          title: 'Reminder',
+          message: "You have spend 10 minutes on the task.",
+          type: 'info',
+        })
+        // timeSeconds.value = 'You have spent 10 minutes'
+        timeSeconds.value = '<span style="color: rgb(190, 79, 79);">You have spent 10 minutes</span>';
+      }
+      else if(missionTimeLeft >0){
+        timeSeconds.value = pad(Math.floor(missionTimeLeft / 60)) +" : "+ pad(missionTimeLeft % 60);
+      }
     }
 
     function pad(val) {
@@ -1093,7 +1109,6 @@ export default {
 
     return { messages,
       timeSeconds,
-      timeMinutes,
       minWords,
       maxWords, 
       userInput, 
@@ -1306,6 +1321,7 @@ export default {
   display: flex;
   align-items: center;
 }
+
 .chat-title{
   display: flex;
   gap: 4px;
