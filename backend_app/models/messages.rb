@@ -22,7 +22,8 @@ module RubyOpenAI
         id:,
         chat_id:,
         role:,
-        response:
+        response:,
+        prompt_time:
       }
     end
   end

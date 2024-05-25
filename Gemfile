@@ -17,6 +17,7 @@ gem 'diffy'
 
 # server
 
+gem 'csv'
 gem 'figaro', '~>1.2'
 gem 'foreman', '~>0.0'
 gem 'puma', '~>6.0'

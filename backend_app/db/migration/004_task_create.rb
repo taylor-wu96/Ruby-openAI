@@ -11,6 +11,7 @@ Sequel.migration do
       String :task_name
       String :final_submission
       String :message_id
+      String :task_finished_time
       String :receipt_handle
       DateTime :created_at
       DateTime :updated_at

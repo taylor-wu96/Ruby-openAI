@@ -4,6 +4,7 @@ require 'roda'
 require 'json'
 require 'net/http'
 require 'uri'
+require 'csv'
 
 module RubyOpenAI
   # Backend web app controller
@@ -52,7 +53,11 @@ module RubyOpenAI
 
         unless Task.where(chat_id: new_chat.id).empty?
           task = Task.where(chat_id: new_chat.id).first
-          task.update(final_submission: data['task_description'])
+          task.update(final_submission: data['task_description'],
+                      task_finished_time: data['task_finished_time'],
+                      task_name: data['task_name'],
+                      message_id: data['message_id'],
+                      receipt_handle: data['receipt_handle'])
           RandomQueue.new(Api.config).finish_task(task)
           return task.attributes.to_json
         end
@@ -189,18 +194,20 @@ module RubyOpenAI
         user_id = r.params['user_id'] || 'anonymous'
         if user_id == 'all'
           data = Task.all.map(&:values)
-          headers = data.first.keys.map(&:to_s)
-          content = [headers.to_csv] + data.map { |row| row.values.to_csv }
-          # File.write('./export.csv', content.join)
-          return content.join
+          # headers = data.first.keys.map(&:to_s)
+          # content = [headers.to_csv] + data.map { |row| row.values.to_csv }
+          # # File.write('./export.csv', content.join)
+          # return content.join
+          return GenerateCsv.generate_csv(data)
         end
         unless Chat.first(user_id:).nil?
           chat_id = Chat.first(user_id:).id
           data = Task.where(chat_id:).map(&:values)
-          headers = data.first.keys.map(&:to_s)
-          content = [headers.to_csv] + data.map { |row| row.values.to_csv }
+          # headers = data.first.keys.map(&:to_s)
+          # content = [headers.to_csv] + data.map { |row| row.values.to_csv }
           # File.write('./export.csv', content.join)
-          return content.join
+          # return content.join
+          return GenerateCsv.generate_csv(data)
         end
 
         'No data' if Chat.first(user_id:).nil? # return no data
@@ -213,26 +220,57 @@ module RubyOpenAI
         user_id = r.params['user_id'] || 'anonymous'
         if user_id == 'all'
           data = Behavior.all.map(&:values)
-          headers = data.first.keys.map(&:to_s)
-          print('headers:', headers)
-          print('data:', data)
-          header_csv = headers.join(',') + "\n"
-          content = [header_csv] + data.map { |row| row.values.join(',') + "\n" }
-          # File.write('./export.csv', content.join)
-          return content.join
+          # headers = data.first.keys.map(&:to_s)
+          # print('headers:', headers)
+          # print('data:', data)
+          # header_csv = headers.join(',') + "\n"
+          # content = [header_csv] + data.map { |row| row.values.join(',') + "\n" }
+          # # File.write('./export.csv', content.join)
+          # return content.join
+          return GenerateCsv.generate_csv(data)
         end
         unless Chat.first(user_id:).nil?
           chat_id = Chat.first(user_id:).id
           data = Behavior.where(chat_id:).map(&:values)
-          headers = data.first.keys.map(&:to_s)
-          header_csv = headers.join(',') + "\n"
-          content = [header_csv] + data.map { |row| row.values.join(',') + "\n" }
-          # File.write('./export.csv', content.join)
-          return content.join
+          # headers = data.first.keys.map(&:to_s)
+          # header_csv = headers.join(',') + "\n"
+          # content = [header_csv] + data.map { |row| row.values.join(',') + "\n" }
+          # # File.write('./export.csv', content.join)
+          # return content.join
+          return GenerateCsv.generate_csv(data)
         end
 
         'No data' if Chat.first(user_id:).nil? # return no data
       end
+
+      # r.get 'message-to-csv' do
+      #   response['Content-Type'] = 'text/csv'
+      #   response.status = 200
+
+      #   user_id = r.params['user_id'] || 'anonymous'
+      #   if user_id == 'all'
+      #     data = Message.all.map(&:values)
+      #     headers = data.first.keys.map(&:to_s)
+      #     header_csv = headers.join(',') + "\n"
+      #     # content = [header_csv] + data.map { |row| row.values.join(',') + "\n" }
+      #     content = [header_csv] + data.map { |row| row.values.map { |value| "\"#{value}\"" }.join(',') + "\n" }
+      #     # content = [headers.to_csv] + data.map { |row| row.values.to_csv }
+      #     # File.write('./export.csv', content.join)
+      #     return content.join
+      #   end
+      #   unless Chat.first(user_id:).nil?
+      #     chat_id = Chat.first(user_id:).id
+      #     data = Message.where(chat_id:).map(&:values)
+      #     headers = data.first.keys.map(&:to_s)
+      #     header_csv = headers.join(',') + "\n"
+      #     # content = [header_csv] + data.map { |row| row.values.join(',') + "\n" }
+      #     # content = [headers.to_csv] + data.map { |row| row.values.to_csv }
+      #     # File.write('./export.csv', content.join)
+      #     return content.join
+      #   end
+
+      #   'No data' if Chat.first(user_id:).nil? # return no data
+      # end
 
       r.get 'message-to-csv' do
         response['Content-Type'] = 'text/csv'
@@ -241,21 +279,16 @@ module RubyOpenAI
         user_id = r.params['user_id'] || 'anonymous'
         if user_id == 'all'
           data = Message.all.map(&:values)
-          headers = data.first.keys.map(&:to_s)
-          content = [headers.to_csv] + data.map { |row| row.values.to_csv }
-          # File.write('./export.csv', content.join)
-          return content.join
+          return GenerateCsv.generate_csv(data)
         end
+
         unless Chat.first(user_id:).nil?
           chat_id = Chat.first(user_id:).id
           data = Message.where(chat_id:).map(&:values)
-          headers = data.first.keys.map(&:to_s)
-          content = [headers.to_csv] + data.map { |row| row.values.to_csv }
-          # File.write('./export.csv', content.join)
-          return content.join
+          return GenerateCsv.generate_csv(data)
         end
 
-        'No data' if Chat.first(user_id:).nil? # return no data
+        'No data' if Chat.first(user_id:).nil?
       end
 
       # test Queue
@@ -277,24 +310,44 @@ module RubyOpenAI
       r.get 'random-task' do
         response['Content-Type'] = 'application/json'
         response.status = 200
+        # user_id = r.params['user_id'] || 'anonymous'
+        # new_chat = if Chat.first(user_id:).nil?
+        #              Chat.create(user_id:)
+        #            else
+        #              Chat.first(user_id:)
+        #            end
+        # unless Task.where(chat_id: new_chat.id).empty?
+        #   task = Task.where(chat_id: new_chat.id).first
+        #   return task.attributes.to_json
+        # end
+
+        # task = Task.create(task_name: CREATVIE_TASK, chat_id: new_chat.id)
+
+        queue = RandomQueue.new(Api.config)
+        task_body = queue.random_task
+        { message_id: task_body.message_id, receipt_handle: task_body.receipt_handle,
+          task_name: JSON.parse(task_body.body)['task'] }.to_json
+        # task_name = JSON.parse(task_body.body)['task']
+        # task_name.to_json
+        # Task.create(task_name:, chat_id: new_chat.id, message_id: task_body.message_id,
+        #             receipt_handle: task_body.receipt_handle).attributes.to_json
+      end
+
+      r.get 'task' do
+        response['Content-Type'] = 'application/json'
+        response.status = 200
         user_id = r.params['user_id'] || 'anonymous'
         new_chat = if Chat.first(user_id:).nil?
                      Chat.create(user_id:)
                    else
                      Chat.first(user_id:)
                    end
-        unless Task.where(chat_id: new_chat.id).empty?
+        if Task.where(chat_id: new_chat.id).empty?
+          Task.create(chat_id: new_chat.id).attributes.to_json
+        else
           task = Task.where(chat_id: new_chat.id).first
           return task.attributes.to_json
         end
-
-        # task = Task.create(task_name: CREATVIE_TASK, chat_id: new_chat.id)
-
-        queue = RandomQueue.new(Api.config)
-        task_body = queue.random_task
-        task_name = JSON.parse(task_body.body)['task']
-        Task.create(task_name:, chat_id: new_chat.id, message_id: task_body.message_id,
-                    receipt_handle: task_body.receipt_handle).attributes.to_json
       end
 
       # basic streaming
@@ -328,8 +381,8 @@ module RubyOpenAI
                      Chat.first(user_id:)
                    end
 
-        Message.create(chat_id: new_chat.id, role: 'user', response: data['message_content'])
-
+        Message.create(chat_id: new_chat.id, role: 'user', response: data['message_content'],
+                       prompt_time: data['prompt_time'])
         history_messages = Message.where(chat_id: new_chat.id).map(&:values).map do |item|
           {
             role: item[:role],

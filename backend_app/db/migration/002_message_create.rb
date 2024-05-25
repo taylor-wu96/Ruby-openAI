@@ -10,6 +10,7 @@ Sequel.migration do
       foreign_key :chat_id, :chats # Links message to a specific chat
       String :role
       String :response
+      String :prompt_time
       DateTime :created_at
       DateTime :updated_at
 

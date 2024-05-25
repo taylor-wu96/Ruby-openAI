@@ -354,6 +354,7 @@ export default {
     // Timer
     const TIME_GAP =10;
     const MISSION_TIME = 20;
+    const MISSION_EXPIRE_TIME = 3600;
     const timeSeconds = ref("10:00");
 
     let missionTimeStamp = 0;
@@ -399,7 +400,6 @@ export default {
       user_id.value = route.query[Constants.URL_USER_PARAMS] || 'anonymous';
       if(user_id.value === 'anonymous'){
         router.push({ path: '/missing' })
-      
       }
       updateSharedVariable({'user_id': user_id.value});
       localData['user_id'] = user_id.value
@@ -434,7 +434,7 @@ export default {
     onMounted(async() => {
 
       document.addEventListener('keydown', handleHighlight);
-      
+      await checkFinishTask(); 
       await initialMessages();
       await getTask();
       await getIPFromAmazon();
@@ -596,27 +596,52 @@ export default {
     }
   }
 
-  const getTask = async () => {
+  const checkFinishTask = async () => {
     try {
+      let api_url = "/task";
+      if(user_id.value !== 'anonymous'){
+        api_url = `/task?user_id=${user_id.value}`;
+      }
+      const { data } = await axios.get(api_url);
+      if(data.final_submission){
+        router.push({ path: '/submitted' })
+      }
+    }
+    catch (error) {
+      console.error('Failed to fetch task:', error);
+    }
+  
+  }
+
+  const getTask = async () => {
+  if(!localData['task']||localData['task'].expire_time < new Date().getTime()){
+      //if no task in local storage or task is expired
+      try {
       let api_url = "/random-task";
       if(user_id.value !== 'anonymous'){
         api_url = `/random-task?user_id=${user_id.value}`;
       } 
       const { data } = await axios.get(api_url);
       console.log('Task:', data);
-      // console.log('Task:', data.task_name);
-      if(data.final_submission){
-        router.push({ path: '/submitted' })
-      }
-      if(data.task_name==='creative'){
-        scenarioText.value = Constants.CREATIVE;
-      }
-      else{
-        scenarioText.value = Constants.PRACTICAL;
-      }
+      // delete data['final_submission']
+      // delete data['chat_id']
+      // message_id
+      // receipt_handle
+      data.expire_time = new Date().getTime() + MISSION_EXPIRE_TIME*1000;
+      localData['task']=data;
+      localStorage.setItem(user_id.value, JSON.stringify(localData))
     } catch (error) {
       console.error('Failed to fetch task:', error);
     }
+
+    }
+    if(localData['task'].task_name==='creative'){
+        scenarioText.value = Constants.CREATIVE;
+      }
+    else{
+      scenarioText.value = Constants.PRACTICAL;
+    }
+
   }
 
   const onSubmitTask = async () => {
@@ -626,7 +651,8 @@ export default {
         api_url = `/submit-task?user_id=${user_id.value}`
         ;
       } 
-      const { data } = await axios.post(api_url,{task_description: textArea.value});
+      const missionTime=Math.floor((new Date().getTime()-missionTimeStamp)/1000);
+      const { data } = await axios.post(api_url,{task_description: textArea.value , message_id: localData['task'].message_id,receipt_handle: localData['task'].receipt_handle ,task_name:localData['task'].task_name,task_finished_time:missionTime });
       ElNotification({
           title: 'Finish',
           message: "You have Successfully Submit the task!",
@@ -684,9 +710,12 @@ export default {
           message_content: userInput.value,
           system_temp: currentTemp.value,
           role: "user",
+          prompt_time: (promptEndTime-promptStartTime)/1000,
         }),
         signal,
       });
+      promptStartTime=0;
+      promptEndTime=0;
       userInput.value = '';
       // disabled the sender button
       const reader = response.body.getReader();
