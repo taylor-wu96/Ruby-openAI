@@ -319,7 +319,7 @@ import axios from "axios";
 import {marked} from "marked";
 import { ref, watch, nextTick } from 'vue';
 import { onMounted, onUnmounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute , useRouter } from 'vue-router';
 import { watchEffect } from 'vue';
 import { ElMessage,ElNotification  } from 'element-plus'
 
@@ -340,6 +340,7 @@ export default {
     const textareaRef = ref(null); // Add this line to define a ref for the textarea
     const highlightedText=ref('');
     const route = useRoute();
+    const router = useRouter();
     const user_id = ref('anonymous');
     let promptStartTime=0
     let promptEndTime=0
@@ -388,6 +389,10 @@ export default {
     watchEffect(async () => {
       // ...
       user_id.value = route.query.user_id || 'anonymous';
+      if(user_id.value === 'anonymous'){
+        router.push({ path: '/missing' })
+      
+      }
       localData['user_id'] = user_id.value
       if (!localStorage.getItem(user_id.value)) {
         localStorage.setItem(user_id.value, JSON.stringify(localData));
@@ -430,7 +435,7 @@ export default {
     // Don't forget to clean up the event listener on component unmount
     onUnmounted(() => {
       document.removeEventListener('keydown', handleHighlight);
-      // document.re
+      // remove the interval in timer
       clearInterval(timeId);
     });
 
@@ -589,8 +594,11 @@ export default {
         api_url = `/random-task?user_id=${user_id.value}`;
       } 
       const { data } = await axios.get(api_url);
-      // console.log('Task:', data);
+      console.log('Task:', data);
       // console.log('Task:', data.task_name);
+      if(data.final_submission){
+        router.push({ path: '/submitted' })
+      }
       if(data.task_name==='creative'){
         scenarioText.value = Constants.CREATIVE;
       }
@@ -615,6 +623,7 @@ export default {
           message: "You have Successfully Submit the task!",
           type: 'success',
       })
+      router.push({ path: '/submitted' })
     } catch (error) {
       console.error('Failed to fetch task:', error);
     }
@@ -628,11 +637,6 @@ export default {
         ;
       } 
       const { data } = await axios.post(api_url,{ip_address: ipAddress.value});
-      ElNotification({
-          title: 'Finish',
-          // message: "You have Successfully Submit the task!",
-          type: 'success',
-      })
     } catch (error) {
       console.error('Failed to update IP:', error);
     }
@@ -651,15 +655,7 @@ export default {
     } 
     controller = new AbortController();
     const signal = controller.signal;
-    let output_response = '';
     try {
-      // messages.value = data.map( (chat)=>{
-      //     return {
-      //       id: chat.created_at,
-      //       text: marked(chat.response),
-      //       sender: chat.role,
-      //     });
-
       const receivedMessage ={
         id: Date.now(),
         text: '',
