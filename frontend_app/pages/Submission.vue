@@ -1,14 +1,11 @@
 <template>
   <div class="submission-page">
-
-          <el-row>
-            <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px; margin-right: 10px;" /> 
-            <div class="brand-class">
-              Cohere AI | Your Personal AI Workspace
-            </div> 
-           
-          </el-row>
-    
+    <el-row class="brand-area">
+      <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px; margin-right: 10px;" /> 
+      <div class="brand-class">
+        Cohere AI | Your Personal AI Workspace
+      </div> 
+    </el-row>
     <el-card class="submission-card">
       <img src="../static/finish.png" alt="Finish" class="submit-img" /> 
       <div  class="submit-text"> Thank you for your submission!</div>
@@ -44,7 +41,8 @@ export default {
 
     onMounted(() => {
       console.log(sharedVariable.value)
-        if (!sharedVariable.value.user_id) {
+        if (!sharedVariable.value.user_id || sharedVariable.value.user_id === "anonymous"
+        ) {
           router.push('/missing')
 
         }
@@ -60,6 +58,20 @@ export default {
 </script>
 
 <style scoped>
+.brand-area{
+  padding: 0 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  
+}
+.brand-class{
+  font-weight: bold;
+  font-size: 1.1rem;
+  word-wrap: break-word;
+  display: inline-block;
+}
 .submission-page {
   display: flex;
   flex-direction: column;

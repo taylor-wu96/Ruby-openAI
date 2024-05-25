@@ -4,7 +4,7 @@ import { createStore } from 'vuex'
 export default createStore({
   state: reactive({
     sharedVariable: {
-      'user-id': '',
+      'user_id': '',
       submitted: false
     }
   }),

@@ -1,14 +1,11 @@
 <template>
   <div class="misformat-page">
-
-          <el-row>
-            <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px; margin-right: 10px;" /> 
-            <div class="brand-class">
-              Cohere AI | Your Personal AI Workspace
-            </div> 
-           
-          </el-row>
-    
+    <el-row class="brand-area">
+      <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px; margin-right: 10px;" /> 
+      <div class="brand-class">
+        Cohere AI | Your Personal AI Workspace
+      </div> 
+    </el-row>
     <el-card class="misformat-card">
       <img src="../static/missing.png" alt="Finish" class="misformat-img" /> 
       <div  class="misformat-text"> The url you offer is not acceptable.<br/> Pls check the link on the pre-survey again!!</div>
@@ -24,6 +21,20 @@ export default {
 </script>
 
 <style scoped>
+.brand-area{
+  padding: 0 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  
+}
+.brand-class{
+  font-weight: bold;
+  font-size: 1.1rem;
+  word-wrap: break-word;
+  display: inline-block;
+}
 .misformat-page {
   display: flex;
   flex-direction: column;
