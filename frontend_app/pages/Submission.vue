@@ -12,13 +12,49 @@
     <el-card class="submission-card">
       <img src="../static/finish.png" alt="Finish" class="submit-img" /> 
       <div  class="submit-text"> Thank you for your submission!</div>
-      <el-button size="large" color="#626aef" round class="submit-link" onclick=""> Go to post survey</el-button>
+      <el-button 
+      size="large" 
+      color="#626aef" 
+      tag="a"
+      :href="surveyUrl"
+      target="_blank" 
+      round 
+      class="submit-link"> Go to post survey</el-button>
     </el-card>
   </div>
 </template>
 
 <script>
+import { computed ,onMounted } from 'vue'
+import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
+import Constants from "../constant/Constants.vue";
+
+
 export default {
+  setup() {
+    const store = useStore()
+    const sharedVariable = computed(() => store.getters.getSharedVariable)
+    const router = useRouter()
+    const surveyUrl = computed(() => {
+      const userId = sharedVariable.value.user_id;
+      return userId ? Constants.POST_SURVEY_URL+'?'+Constants.URL_USER_PARAMS+'='+userId : 'https://test.com/';
+    });
+    
+
+    onMounted(() => {
+      console.log(sharedVariable.value)
+        if (!sharedVariable.value.user_id) {
+          router.push('/missing')
+
+        }
+
+    })
+
+    
+    return { sharedVariable,surveyUrl }
+  }
+
 
 }
 </script>

@@ -322,6 +322,7 @@ import { onMounted, onUnmounted } from 'vue';
 import { useRoute , useRouter } from 'vue-router';
 import { watchEffect } from 'vue';
 import { ElMessage,ElNotification  } from 'element-plus'
+import { useStore } from 'vuex'
 
 
 export default {
@@ -361,6 +362,13 @@ export default {
     // streaming variables
     const messageSending = ref(false);
 
+    // shared store variables
+
+    const store = useStore()
+    const updateSharedVariable = (obj) => {
+      store.commit('updateSharedVariable', obj)
+    }
+
    
 
     const currentTemp=ref(Constants.DEFAULTS_TEMP)
@@ -388,11 +396,12 @@ export default {
 
     watchEffect(async () => {
       // ...
-      user_id.value = route.query.user_id || 'anonymous';
+      user_id.value = route.query[Constants.URL_USER_PARAMS] || 'anonymous';
       if(user_id.value === 'anonymous'){
         router.push({ path: '/missing' })
       
       }
+      updateSharedVariable({'user_id': user_id.value});
       localData['user_id'] = user_id.value
       if (!localStorage.getItem(user_id.value)) {
         localStorage.setItem(user_id.value, JSON.stringify(localData));
@@ -623,6 +632,7 @@ export default {
           message: "You have Successfully Submit the task!",
           type: 'success',
       })
+      updateSharedVariable({submitted: true});
       router.push({ path: '/submitted' })
     } catch (error) {
       console.error('Failed to fetch task:', error);

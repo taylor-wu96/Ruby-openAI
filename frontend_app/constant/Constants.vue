@@ -6,6 +6,8 @@ export default {
   MAX_TEMP: 1.2,
   MIN_TEMP: 0.4,
   DEFAULTS_TEMP: 0.6,
+  POST_SURVEY_URL: 'https://test.com/',
+  URL_USER_PARAMS: 'user_id',
 }
 </script>
 
