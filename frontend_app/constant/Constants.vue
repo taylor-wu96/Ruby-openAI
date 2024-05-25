@@ -8,6 +8,9 @@ export default {
   DEFAULTS_TEMP: 0.6,
   POST_SURVEY_URL: 'https://test.com/',
   URL_USER_PARAMS: 'user_id',
+  TIME_GAP:10,
+  MISSION_TIME: 600,
+  MISSION_EXPIRE_TIME: 3600,
 }
 </script>
 

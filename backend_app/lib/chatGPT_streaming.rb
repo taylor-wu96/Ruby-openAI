@@ -23,7 +23,7 @@ module RubyOpenAI
         Net::HTTP.start(@uri.hostname, @uri.port, use_ssl: true) do |http|
           http.request @requests do |response|
             response.read_body do |chunk|
-              print 'chunk:', chunk
+              # print 'chunk:', chunk
               out << chunk
             end
           end

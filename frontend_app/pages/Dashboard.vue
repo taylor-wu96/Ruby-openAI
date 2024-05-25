@@ -352,9 +352,9 @@ export default {
     let timeId
 
     // Timer
-    const TIME_GAP =10;
-    const MISSION_TIME = 20;
-    const MISSION_EXPIRE_TIME = 3600;
+    const TIME_GAP =Constants.TIME_GAP;
+    const MISSION_TIME = Constants.MISSION_TIME;
+    const MISSION_EXPIRE_TIME = Constants.MISSION_EXPIRE_TIME;
     const timeSeconds = ref("10:00");
 
     let missionTimeStamp = 0;
@@ -385,9 +385,6 @@ export default {
     const submitTaskRef = ref(null)
     const infoRef = ref(null)
     const scrollContainer = ref(null);
-    
-
-
 
     const mobileDrawer = ref(window.innerWidth<992?true:false)
     const open = ref(true)
@@ -682,7 +679,8 @@ export default {
   let controller = null; 
   const streamingResponse = async () => {
     messageSending.value = true;
-    
+    let insufficent=false;
+    let savemessage = '';
     let streaming_message = '';
     let api_url = "/openAI-streaming";
     if(user_id.value !== 'anonymous'){
@@ -729,10 +727,32 @@ export default {
         const chunk = decoder.decode(value);
 
         const lines = chunk.split("\n");
-        // console.log('Streaming Lines:', lines);
-        const parsedLines = lines.filter((line) => line.trim() !== ''  && !line.includes("[DONE]"))
-                                .map((line)=>line.replace(/^data: /, "").trim())
-                                .map((line) => JSON.parse(line));
+        if(insufficent){
+          lines[0] = savemessage + lines[0];
+          insufficent=false;
+        }
+        console.log('Streaming Lines:', lines);
+        // const parsedLines = lines.filter((line) => line.trim() !== ''  && !line.includes("[DONE]"))
+        //                         .map((line)=>line.replace(/^data: /, "").trim())
+        //                         .map((line) => JSON.parse(line));
+
+        const parsedLines = lines
+              .filter((line) => line.trim() !== "" && !line.includes("\[DONE\]"))
+              .map((line) => line.replace(/^data: /, "").trim())
+              .map((line) => {
+                try {
+                  return JSON.parse(line);
+                } catch (error) {
+                  console.error("Failed to parse JSON line:", line);
+                  insufficent=true;
+                  savemessage = line;
+
+                  console.error(error);
+                  return null; // or handle the error in a different way
+                }
+              })
+              .filter((parsedLine) => parsedLine !== null); // Filter out null values caused by parsing errors
+
         // console.log('Streaming Response:', parsedLines);
         for ( const parsedLine of parsedLines){
           const {choices} = parsedLine;
@@ -743,7 +763,7 @@ export default {
             messages.value[messages.value.length - 1]["text"] = marked(streaming_message);
           }         
           // console.log('Store to messages:', messages.value[messages.value.length - 1]);
-          // console.log('Streaming Response:', output_response);
+          // console.log('Streaming Response:', streaming_message);
           // createMessage(marked(parsedLine.response), "assistant");
         }
 

@@ -362,6 +362,7 @@ module RubyOpenAI
         streaming_gpt = ChatGptStreaming.new(BASE_PROMPT, history_messages, temp)
         stream do |out|
           streaming_gpt.streaming.each { |message| out << message }
+          sleep 0.1
         end
       end
 
