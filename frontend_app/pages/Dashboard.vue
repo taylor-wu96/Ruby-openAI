@@ -1049,7 +1049,7 @@ export default {
       sendBehavior({
         id: Date.now(),
         content: (focusTimeEnd - focusTimeStart) / 1000,
-        type: 'focus_time',
+        type: 'FOCUS_TIME',
         target_object: targetElementName,
         log_time: new Date(focusTimeEnd).toISOString(),
       })
@@ -1064,7 +1064,7 @@ export default {
             id: Date.now(),
             content: 'User is open the page on' + Date.now().toString(),
             type: 'Initial',
-            target_object: 'page',
+            target_object: 'Page',
             log_time: new Date().toISOString(),
        })  
       }
@@ -1073,7 +1073,7 @@ export default {
             id: Date.now(),
             content: (focus_leave-new Date().getTime())/1000,
             type: 'Leaving Time',
-            target_object: 'page',
+            target_object: 'Page',
             log_time: new Date().toISOString(),
        })  
       }
@@ -1088,7 +1088,7 @@ export default {
             id: Date.now(),
             content: (focus_leave-new Date().getTime())/1000,
             type: 'Stay Time',
-            target_object: 'page',
+            target_object: 'Page',
             log_time: new Date().toISOString(),
       })  
     }
