@@ -4,7 +4,6 @@ require 'roda'
 require 'json'
 require 'net/http'
 require 'uri'
-require 'csv'
 
 module RubyOpenAI
   # Backend web app controller
@@ -243,35 +242,6 @@ module RubyOpenAI
         'No data' if Chat.first(user_id:).nil? # return no data
       end
 
-      # r.get 'message-to-csv' do
-      #   response['Content-Type'] = 'text/csv'
-      #   response.status = 200
-
-      #   user_id = r.params['user_id'] || 'anonymous'
-      #   if user_id == 'all'
-      #     data = Message.all.map(&:values)
-      #     headers = data.first.keys.map(&:to_s)
-      #     header_csv = headers.join(',') + "\n"
-      #     # content = [header_csv] + data.map { |row| row.values.join(',') + "\n" }
-      #     content = [header_csv] + data.map { |row| row.values.map { |value| "\"#{value}\"" }.join(',') + "\n" }
-      #     # content = [headers.to_csv] + data.map { |row| row.values.to_csv }
-      #     # File.write('./export.csv', content.join)
-      #     return content.join
-      #   end
-      #   unless Chat.first(user_id:).nil?
-      #     chat_id = Chat.first(user_id:).id
-      #     data = Message.where(chat_id:).map(&:values)
-      #     headers = data.first.keys.map(&:to_s)
-      #     header_csv = headers.join(',') + "\n"
-      #     # content = [header_csv] + data.map { |row| row.values.join(',') + "\n" }
-      #     # content = [headers.to_csv] + data.map { |row| row.values.to_csv }
-      #     # File.write('./export.csv', content.join)
-      #     return content.join
-      #   end
-
-      #   'No data' if Chat.first(user_id:).nil? # return no data
-      # end
-
       r.get 'message-to-csv' do
         response['Content-Type'] = 'text/csv'
         response.status = 200
@@ -351,19 +321,19 @@ module RubyOpenAI
       end
 
       # basic streaming
-      r.on 'streaming' do
-        response.headers['Content-Type'] = 'text/event-stream'
-        response.headers['Last-Modified'] = Time.now.httpdate
-        response.status = 200
-        tmp = ''
-        stream do |out|
-          TEST_LOREM.split(' ').each do |v|
-            tmp += v + ' '
-            out << "data: #{tmp}\n\n"
-            sleep 0.05
-          end
-        end
-      end
+      # r.on 'streaming' do
+      #   response.headers['Content-Type'] = 'text/event-stream'
+      #   response.headers['Last-Modified'] = Time.now.httpdate
+      #   response.status = 200
+      #   tmp = ''
+      #   stream do |out|
+      #     TEST_LOREM.split(' ').each do |v|
+      #       tmp += v + ' '
+      #       out << "data: #{tmp}\n\n"
+      #       sleep 0.05
+      #     end
+      #   end
+      # end
 
       # streaming with openAI api in frontend assign prompt
       r.post 'openAI-streaming' do
