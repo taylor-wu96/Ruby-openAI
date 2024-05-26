@@ -27,11 +27,11 @@ gem 'sequel', '~>5.0'
 gem 'tilt'
 # Use AWS gem for accessing SQS
 gem 'aws-sdk-sqs'
-# gem 'pg', '~>1.0'
+gem 'pg', '~>1.0'
 
-group :production do
-  gem 'pg', '~>1.0'
-end
+# group :production do
+#   gem 'pg', '~>1.0'
+# end
 
 group :development, :test do
   gem 'pry'
