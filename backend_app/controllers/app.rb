@@ -56,7 +56,10 @@ module RubyOpenAI
                       task_finished_time: data['task_finished_time'],
                       task_name: data['task_name'],
                       message_id: data['message_id'],
-                      receipt_handle: data['receipt_handle'])
+                      receipt_handle: data['receipt_handle'],
+                      word_deleted_count: data['word_deleted_count'],
+                      word_editing_count: data['word_editing_count'],
+                      character_revision_count: data['character_revision_count'])
           RandomQueue.new(Api.config).finish_task(task)
           return task.attributes.to_json
         end
@@ -189,23 +192,16 @@ module RubyOpenAI
       end
 
       r.get 'task-to-csv' do
-        # response['Content-Type'] = 'application/json'
+        response['Content-Type'] = 'text/csv'
+        response.status = 200
         user_id = r.params['user_id'] || 'anonymous'
         if user_id == 'all'
           data = Task.all.map(&:values)
-          # headers = data.first.keys.map(&:to_s)
-          # content = [headers.to_csv] + data.map { |row| row.values.to_csv }
-          # # File.write('./export.csv', content.join)
-          # return content.join
           return GenerateCsv.generate_csv(data)
         end
         unless Chat.first(user_id:).nil?
           chat_id = Chat.first(user_id:).id
           data = Task.where(chat_id:).map(&:values)
-          # headers = data.first.keys.map(&:to_s)
-          # content = [headers.to_csv] + data.map { |row| row.values.to_csv }
-          # File.write('./export.csv', content.join)
-          # return content.join
           return GenerateCsv.generate_csv(data)
         end
 
@@ -219,23 +215,11 @@ module RubyOpenAI
         user_id = r.params['user_id'] || 'anonymous'
         if user_id == 'all'
           data = Behavior.all.map(&:values)
-          # headers = data.first.keys.map(&:to_s)
-          # print('headers:', headers)
-          # print('data:', data)
-          # header_csv = headers.join(',') + "\n"
-          # content = [header_csv] + data.map { |row| row.values.join(',') + "\n" }
-          # # File.write('./export.csv', content.join)
-          # return content.join
           return GenerateCsv.generate_csv(data)
         end
         unless Chat.first(user_id:).nil?
           chat_id = Chat.first(user_id:).id
           data = Behavior.where(chat_id:).map(&:values)
-          # headers = data.first.keys.map(&:to_s)
-          # header_csv = headers.join(',') + "\n"
-          # content = [header_csv] + data.map { |row| row.values.join(',') + "\n" }
-          # # File.write('./export.csv', content.join)
-          # return content.join
           return GenerateCsv.generate_csv(data)
         end
 

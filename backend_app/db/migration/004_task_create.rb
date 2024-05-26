@@ -13,6 +13,9 @@ Sequel.migration do
       String :message_id
       String :task_finished_time
       String :receipt_handle
+      Integer :word_editing_count
+      Integer :word_deleted_count
+      Integer :character_revision_count
       DateTime :created_at
       DateTime :updated_at
 

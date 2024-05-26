@@ -25,7 +25,10 @@ module RubyOpenAI
         task_finished_time:,
         final_submission:,
         message_id:,
-        receipt_handle:
+        receipt_handle:,
+        word_editing_count:,
+        word_deleted_count:,
+        character_revision_count:
       }
     end
   end

@@ -649,7 +649,15 @@ export default {
         ;
       } 
       const missionTime=Math.floor((new Date().getTime()-missionTimeStamp)/1000);
-      const { data } = await axios.post(api_url,{task_description: textArea.value , message_id: localData['task'].message_id,receipt_handle: localData['task'].receipt_handle ,task_name:localData['task'].task_name,task_finished_time:missionTime });
+      const { data } = await axios.post(api_url,
+        {task_description: textArea.value , 
+          message_id: localData['task'].message_id,
+          receipt_handle: localData['task'].receipt_handle,
+          task_name:localData['task'].task_name,
+          task_finished_time:missionTime,
+          word_editing_count: wordEditingCount,
+          word_deleting_count: wordDeletingCount,
+          character_revision_count: characterRevisionCount});
       ElNotification({
           title: 'Finish',
           message: "You have Successfully Submit the task!",
@@ -717,7 +725,7 @@ export default {
       userInput.value = '';
       // disabled the sender button
       const reader = response.body.getReader();
-      const decoder = new TextDecoder("utf-8");
+      const decoder = new TextDecoder("utf-8",{ stream: true });
 
       while(true){
         const {done, value} = await reader.read();
@@ -970,7 +978,8 @@ export default {
     const handleCopy = (e) => {
       // console.log(e.clipboardData.getData('text/plain'));
       // console.log('Copied Text:', window.getSelection().toString());
-      const targetElementName = e.target.name||e.target.id||e.target.nodeName;
+      console.log('Copied Text:', e.target.parentElement.id);
+      const targetElementName = e.target.name||e.target.id||e.target.parentElement.id||e.target.parentElement.parentElement.id||e.target.nodeName;
       sendBehavior({
         id: Date.now(),
         content: window.getSelection().toString(),
@@ -1009,7 +1018,7 @@ export default {
         //  console.log('select:', selectedText);
         if (selectedText) {
           // console.log('Selected Text:', selectedText);
-          const targetElementName = e.target.name||e.target.id||e.target.nodeName;
+          const targetElementName = e.target.name||e.target.id||e.target.parentElement.id||e.target.parentElement.parentElement.id||e.target.nodeName;
           sendBehavior({
             id: Date.now(),
             content: selectedText,
@@ -1038,7 +1047,7 @@ export default {
       if (selectedText !== '') {
         // Do something with the selected text
         // console.log('Highlight Text:', selectedText);
-        const targetElementName = e.target.name||e.target.id||e.target.nodeName;
+        const targetElementName = e.target.name||e.target.id||e.target.parentElement.id||e.target.parentElement.parentElement.id||e.target.nodeName;
         // targetElementName.split('_');
         sendBehavior({
           id: Date.now(),
@@ -1091,7 +1100,7 @@ export default {
       else{
          sendBehavior({
             id: Date.now(),
-            content: (focus_leave-new Date().getTime())/1000,
+            content: (new Date().getTime()-focus_leave)/1000,
             type: 'Leaving Time',
             target_object: 'Page',
             log_time: new Date().toISOString(),
@@ -1102,15 +1111,27 @@ export default {
        highlightedText.value='User is focused on the page'
 
     } else {
-      // console.log('User has left the page');
-      // Perform actions when the page is not in focus
-      sendBehavior({
+      if(focus_leave===0){
+        sendBehavior({
             id: Date.now(),
-            content: (focus_leave-new Date().getTime())/1000,
-            type: 'Stay Time',
+            content: 'User is open the page on' + Date.now().toString(),
+            type: 'Initial',
             target_object: 'Page',
             log_time: new Date().toISOString(),
-      })  
+       })  
+      }
+      else{
+          sendBehavior({
+              id: Date.now(),
+              content: (new Date().getTime()-focus_leave)/1000,
+              type: 'Stay Time',
+              target_object: 'Page',
+              log_time: new Date().toISOString(),
+        })  
+      }
+      // console.log('User has left the page');
+      // Perform actions when the page is not in focus
+      
     }
     focus_leave=new Date().getTime();
     });
