@@ -26,7 +26,7 @@ gem 'roda', '~>3.0'
 gem 'sequel', '~>5.0'
 gem 'tilt'
 # Use AWS gem for accessing SQS
-gem 'aws-sdk'
+gem 'aws-sdk-sqs'
 
 group :production do
   gem 'pg', '~>1.0'
