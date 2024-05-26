@@ -29,7 +29,7 @@ gem 'tilt'
 gem 'aws-sdk'
 
 group :production do
-  gem 'pg', '~>1.0'
+  gem 'pg', '~> 1.0'
 end
 
 group :development, :test do
