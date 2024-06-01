@@ -6,7 +6,7 @@ export default {
   MAX_TEMP: 1.2,
   MIN_TEMP: 0.4,
   DEFAULTS_TEMP: 0.6,
-  POST_SURVEY_URL: 'https://test.com/',
+  POST_SURVEY_URL: 'https://moonbear.herokuapp.com/onlinesurvey/8efecd35-3fc0-4a97-870d-d8a048f1a023/617cecde-0754-4f1e-9885-1086d7671d97',
   URL_USER_PARAMS: 'user_id',
   TIME_GAP:10,
   MISSION_TIME: 600,

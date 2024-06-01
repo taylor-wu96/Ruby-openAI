@@ -41,11 +41,11 @@ export default {
 
     onMounted(() => {
       console.log(sharedVariable.value)
-        if (!sharedVariable.value.user_id || sharedVariable.value.user_id === "anonymous"
-        ) {
-          router.push('/missing')
+      //  if (!sharedVariable.value.user_id || sharedVariable.value.user_id === "anonymous"
+      //  ) {
+      //    router.push('/missing')
 
-        }
+      //  }
 
     })
 
