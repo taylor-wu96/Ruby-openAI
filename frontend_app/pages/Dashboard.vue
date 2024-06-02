@@ -35,7 +35,7 @@
                   v-model="textArea"
                   type="textarea"
                   placeholder="Leave some notes here..."
-                  :autosize="{ minRows: 8 , maxRows: 8}"
+                  :autosize="{ minRows: textAreaRowRef , maxRows: textAreaRowRef}"
                   @input="handleInput($event, textArea)"
 
                   @keydown.ctrl.a="handleHighlight"
@@ -225,7 +225,6 @@
                   name="PromptArea"
                   v-model="userInput"
                   placeholder="Type your message here..."
-                  resize="none"
                   @input="handlePromptInput($event, userInput)"
                   @keydown.ctrl.a="handleHighlight"
                   @keydown.meta.a="handleHighlight"
@@ -247,10 +246,11 @@
         <!-- Tour Code -->
 
         <el-tour :show-close="false" @finish="tourFinished" :mask="{ color: '#000000df', }" v-model="open" type="default" >
+
           <el-tour-step title="Introduction" :content-style="{ maxWidth: '800px', width:'80%', padding:'40px'}">
             <h2>About the Task: </h2>
             <br/>
-            <div style="font-size: 1.125rem;line-height: 150%;font-weight: 400;">In this website You have to finish a task in a given scenario. We hope to leverage your ideas to help us come up with better plans within a limited time. <b>To reward the best participants, we will select the top three submissions based on completeness, originality, and clarity.</b> These top participants will receive additional rewards, which will be distributed through Prolific and communicated via private messages.</div>
+            <div style="font-size: 1.125rem;line-height: 150%;font-weight: 400; ">In this website You have to finish a task in a given scenario. We hope to leverage your ideas to help us come up with better plans within a limited time. <br/> To reward the best participants, we will select the top submissions based on completeness, originality, and clarity.These top participants <span style="color: #eb7b5b;font-weight:bold;">will receive additional rewards </span>, which will be distributed through Prolific and communicated via private messages.</div>
             <br/>
             <div style="font-size: 1.125rem;line-height: 150%;font-weight: 400;">
               <ul style="padding: 10px;">
@@ -261,7 +261,7 @@
                   Avoid searching for information on other websites.The accuracy of the facts is not our primary concern. 
                 </li>
                 <li>
-                  Instead, we are interested in whether your responses sufficiently reflect your own original ideas.
+                  Instead, we are interested in <span style="color: #eb7b5b;font-weight:bold;">whether your responses sufficiently reflect your own original ideas </span> .
                 </li>
               </ul>
             </div>
@@ -274,21 +274,52 @@
           <el-tour-step
             :target="scenarioRef?.$el"
             title="Scenario"
-            description="Here, you will see the details of the scenario for the task. You should finish the requirements of the scenario to finish the task. You might need to scroll downto see the full details."
-          />
+          >
+          <div style="font-size: 0.9rem;line-height: 150%;font-weight: 400; padding: 0px 10px;">
+              <ul >
+                <li>
+                  Here, you will see the details of the scenario for the task.
+                </li>
+                <li>
+                  Fulfill the requirements to finish the task.
+                </li>
+                <li>
+                  Scroll down to see the full details.
+                </li>
+              </ul>
+            </div>
+            
+          </el-tour-step>
           <el-tour-step
             :target="noteRef?.$el"
             title="Your Answer"
-            description="You can keep all of your notes and answer here before submission. You can see the word count below the text area. We expect you to complete your responses in 10 minutes. You can track your elapsed time in the response area. If you exceed 10 minutes, we will give you a notice message."
+          >
+            <div style="font-size: 0.9rem;line-height: 150%;font-weight: 400; padding: 0px 10px;">
+              <ul >
+                <li>
+                  You can keep all of your notes and answer here before submission.
+                </li>
+                <li>
+                  See the word counts and elapsed time below the response area.
+                </li>
+                <li>
+                  We expect you to complete your responses around 10 minutes. When you exceed 10 minutes, we will give you a notice message."
+                </li>
+              </ul>
+            </div>
+          </el-tour-step> 
 
-          />
                <!-- placement="left-start" -->
           <el-tour-step
             :placement="!mobileDrawer?'left':'top-start'"
             :target="chatBotRef?.$el"
             title="Task AI"
-            description="Task AI is an AI chatbot service. We have used the current best AI tools, and trained it to the travel context you are working on.  It can help you generate or refine your ideas and words. You might need to scroll down to see the latest message."
-          />
+          >
+            <div style="font-size: 0.9rem;line-height: 150%;font-weight: 400; padding: 0px 10px;">
+              Task AI is an AI chatbot service. We have used the current best AI tools, and trained it to the travel context you are working on.  <br/>
+              It can help you generate or refine your ideas and words. Scroll down to see the latest message.
+            </div>
+          </el-tour-step>
 
           <el-tour-step
             :target="chatInputRef?.$el"
@@ -298,13 +329,20 @@
           <el-tour-step
             :target="submitTaskRef?.$el"
             title="Submit Task"
-            description="After you finish the task, please click the toggle to confirm that you have finished the answer, and then you can click the submit button."
-          />
+            
+          >
+            <div style="font-size: 0.9rem;line-height: 150%;font-weight: 400; padding: 0px 10px;">
+              After you finish the task, please click the toggle to confirm that you have finished the answer. <br/>
+              Then you can click the submit button.
+            </div>
+          
+          </el-tour-step>
 
           <el-tour-step
             :target="infoRef?.$el"
             title="Want to see the tour again?"
             description="Just click this button to see the tour again."
+            :next-button-props=" {children:'Let Start!'}"
           />
         </el-tour>
 
@@ -389,6 +427,10 @@ export default {
     const mobileDrawer = ref(window.innerWidth<992?true:false)
     const open = ref(true)
     let localData ={}
+
+    // input row
+    const textAreaRowRef = ref(8);
+
 
 
 
@@ -606,7 +648,7 @@ export default {
     }
   }
   const sendError = async (error) => {
-    if (behavior) {
+    if (error) {
       let api_url = "/error-log";
       if (user_id.value !== 'anonymous') {
         api_url = `/error-log?user_id=${user_id.value}`;
@@ -614,9 +656,8 @@ export default {
       try {
         const { data } = await axios.post(api_url, error);
         // console.log('Response Behavior', data);
-      } catch (error) {
-        console.error('Failed to send error:', error);
-        // sendError({error_message:"Failed to send error:"+ error});
+      } catch (err) {
+        console.error('Failed to send error:', err);
         // Handle specific error scenarios here if needed
       }
     }
@@ -1176,6 +1217,18 @@ export default {
       else{
         mobileDrawer.value = false;
       }
+      if(window.innerHeight<768){
+        textAreaRowRef.value = 6;
+      }
+      else if(window.innerHeight<992){
+        textAreaRowRef.value = 8;
+      }
+      else if (window.innerHeight<1024){
+        textAreaRowRef.value = 10;
+      }
+      else{
+        textAreaRowRef.value = 12;
+      }
     })
 
     // const onSubmitTask = async () => {
@@ -1263,7 +1316,9 @@ export default {
       MAX_TEMP,
       MIN_TEMP,
       currentTemp,
-      resentMessage,};
+      resentMessage,
+      textAreaRowRef,
+    };
   },
 };
 </script>
@@ -1274,14 +1329,16 @@ export default {
 *{
   padding: 0;
   margin: 0;
+  box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
 }
 
 .chat-area,
 .task-area {
   margin: 10px;
-  max-height: calc(100vh - 100px); /* Adjust the value based on your layout */
-  height:calc(100vh - 100px) ;
+  max-height: calc(100vh - 120px); /* Adjust the value based on your layout */
+  /* height:calc(100vh - 100px) ; */
+  
 }
 .m-chat-area{
   width: 100%;
@@ -1321,6 +1378,8 @@ export default {
 }
 
 .dashboard {
+  max-width: 1600px;
+  margin: auto;
   display: flex;
   flex-direction: row; /* Change flex-direction to row */
   flex: 1; /* Added */
@@ -1332,6 +1391,7 @@ export default {
   flex-direction: column; /* Added */
   align-items: center;
   flex: 1;  
+  cursor: not-allowed;
   /* gap: 10px; */
 
   /* padding-right: 20px; Add some spacing between columns */
