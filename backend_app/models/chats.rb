@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
-# models/location.rb
-
 require 'sequel'
-
 module RubyOpenAI
   class Chat < Sequel::Model
     # validation for the model
@@ -12,11 +9,7 @@ module RubyOpenAI
     many_to_one :message, class: :'RubyOpenAI::Message'
     many_to_one :behavior, class: :'RubyOpenAI::Behavior'
     one_to_one :task, class: :'RubyOpenAI::Task'
-
-    # def validate
-    #   super
-    #   validates_presence %i[name course_id]
-    # end
+    many_to_one :errorlog, class: :'RubyOpenAI::Errorlog'
 
     def attributes
       {

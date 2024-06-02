@@ -3,12 +3,12 @@
     <el-row class="brand-area">
       <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px; margin-right: 10px;" /> 
       <div class="brand-class">
-        Cohere AI | Your Personal AI Workspace
+        Co-here | Your Personal Task Workspace
       </div> 
     </el-row>
     <el-card class="misformat-card">
       <img src="../static/missing.png" alt="Finish" class="misformat-img" /> 
-      <div  class="misformat-text"> This URL is not valid.<br/> Please check the link on the pre-survey again!!</div>
+      <div  class="misformat-text"> This URL is not valid.<br/> Please check the link on the pre-survey again!!</div> 
       <el-button size="large" color="#626aef" round class="misformat-link" onclick="">Contact us</el-button>
     </el-card>
   </div>

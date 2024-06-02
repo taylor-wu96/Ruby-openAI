@@ -134,6 +134,33 @@ module RubyOpenAI
         user_behavior.attributes.to_json
       end
 
+      r.post 'behavior' do
+        user_id = r.params['user_id'] || 'anonymous'
+        data = JSON.parse(r.body.read)
+        new_chat = if Chat.first(user_id:).nil?
+                     Chat.create(user_id:)
+                   else
+                     Chat.first(user_id:)
+                   end
+        user_behavior = Behavior.create(chat_id: new_chat.id, content: data['content'], type: data['type'],
+                                        target_object: data['target_object'], log_time: data['log_time'])
+        response.status = 201
+        user_behavior.attributes.to_json
+      end
+
+      r.post 'error-log' do
+        user_id = r.params['user_id'] || 'anonymous'
+        data = JSON.parse(r.body.read)
+        new_chat = if Chat.first(user_id:).nil?
+                     Chat.create(user_id:)
+                   else
+                     Chat.first(user_id:)
+                   end
+        error_log = Errorlog.create(chat_id: new_chat.id, error_message: data['error_message'])
+        response.status = 201
+        error_log.attributes.to_json
+      end
+
       r.get 'behavior_log' do
         response['Content-Type'] = 'application/json'
         response.status = 200
@@ -220,6 +247,24 @@ module RubyOpenAI
         unless Chat.first(user_id:).nil?
           chat_id = Chat.first(user_id:).id
           data = Behavior.where(chat_id:).map(&:values)
+          return GenerateCsv.generate_csv(data)
+        end
+
+        'No data' if Chat.first(user_id:).nil? # return no data
+      end
+
+      r.get 'error-log-to-csv' do
+        response['Content-Type'] = 'text/csv'
+        response.status = 200
+
+        user_id = r.params['user_id'] || 'anonymous'
+        if user_id == 'all'
+          data = Errorlog.all.map(&:values)
+          return GenerateCsv.generate_csv(data)
+        end
+        unless Chat.first(user_id:).nil?
+          chat_id = Chat.first(user_id:).id
+          data = Errorlog.where(chat_id:).map(&:values)
           return GenerateCsv.generate_csv(data)
         end
 

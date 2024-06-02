@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-# models/location.rb
-
 require 'sequel'
-
 module RubyOpenAI
+  # class to store the task for the user
   class Task < Sequel::Model
     # validation for the model
     plugin :validation_helpers

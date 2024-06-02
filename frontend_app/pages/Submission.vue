@@ -3,7 +3,7 @@
     <el-row class="brand-area">
       <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px; margin-right: 10px;" /> 
       <div class="brand-class">
-        Cohere AI | Your Personal AI Workspace
+        Co-here | Your Personal Task Workspace
       </div> 
     </el-row>
     <el-card class="submission-card">
@@ -41,11 +41,11 @@ export default {
 
     onMounted(() => {
       console.log(sharedVariable.value)
-      //  if (!sharedVariable.value.user_id || sharedVariable.value.user_id === "anonymous"
-      //  ) {
-      //    router.push('/missing')
+       if (!sharedVariable.value.user_id || sharedVariable.value.user_id === "anonymous"
+       ) {
+         router.push('/missing')
 
-      //  }
+       }
 
     })
 

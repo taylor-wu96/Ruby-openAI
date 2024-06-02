@@ -1,12 +1,10 @@
 # frozen_string_literal: true
 
-# models/location.rb
-
 require 'sequel'
 
 module RubyOpenAI
-  # class to store the messages between the user and the bot
-  class Message < Sequel::Model
+  # class to store the error logs
+  class Errorlog < Sequel::Model
     # validation for the model
     plugin :validation_helpers
     plugin :timestamps, update_on_create: true
@@ -17,9 +15,7 @@ module RubyOpenAI
       {
         id:,
         chat_id:,
-        role:,
-        response:,
-        prompt_time:
+        error_message:
       }
     end
   end

@@ -20,6 +20,7 @@ const routes = [
     name: 'Missing',
     component: Misformat,
   },
+  { path: '/:pathMatch(.*)*', component: Misformat   }
 ];
 
 const router = createRouter({

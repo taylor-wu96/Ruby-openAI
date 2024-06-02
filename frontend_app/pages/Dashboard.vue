@@ -6,7 +6,7 @@
           <el-row :gutter="20" class="brand-area">
             <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px; margin-right: 10px;" /> 
             <div class="brand-class">
-              Cohere AI | Your Personal AI Workspace
+              Co-here | Your Personal Task Workspace
             </div> 
             <el-button style="margin-left:8px;" round ref="infoRef" size="small" type="info" icon="InfoFilled" @click="open = true">
               Help
@@ -334,8 +334,8 @@ export default {
     const messages = ref([]);
     const textAreaWordCount = ref(0);
     const scenarioText = ref('');
-    const minWords = 2;
-    const maxWords = 300;
+    const minWords = Constants.ACCEPTABLE_MIN_WORDS;
+    const maxWords = Constants.ACCEPTABLE_MAX_WORDS;
     const userInput = ref('');
     const textArea = ref('');
     const textareaRef = ref(null); // Add this line to define a ref for the textarea
@@ -402,11 +402,9 @@ export default {
       localData['user_id'] = user_id.value
       if (!localStorage.getItem(user_id.value)) {
         localStorage.setItem(user_id.value, JSON.stringify(localData));
-        // console.log('Local Data:', localData);
       } else {
         const data = await localStorage.getItem(user_id.value);
         localData = JSON.parse(data);
-        // console.log('Local Data:', localData);
         textArea.value = localData['storage_notes']||'';
         if(textArea.value){
           previousCharacterCount = textArea.value.length;
@@ -474,7 +472,6 @@ export default {
           message: `You have spent ${Math.floor(MISSION_TIME/60)} minutes on the task.`,
           type: 'info',
         })
-        // timeSeconds.value = 'You have spent 10 minutes'
         timeSeconds.value = `<span style="color: rgb(190, 79, 79);"> You have spent ${Math.floor(MISSION_TIME/60)} minutes</span>`;
       }
       else if(missionTimeLeft >0){
@@ -505,23 +502,36 @@ export default {
     }
 
     // Error Prevention
+    // TODO: check the error handling
     const checkTaskFinish= () => {
-      if(textAreaWordCount.value>minWords && textAreaWordCount.value<maxWords){
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            ElMessage.success('Switch success')
-            return resolve(true)
-          }, 100)
-        })
-      }else{
-        // console.log('Task Not Finished:', value);
-          return new Promise((_, reject) => {
+      if(!hasFinishTask.value){
+        if(textAreaWordCount.value>minWords && textAreaWordCount.value<maxWords){
+          return new Promise((resolve) => {
             setTimeout(() => {
-              ElMessage.error(`Task not finished. Please write between ${minWords} and ${maxWords}  words.`)
-              return reject(new Error('Error'))
+              ElNotification({
+                title: 'Notice',
+                message: 'You can submit the task now.',
+                type: 'success',
+              })
+              return resolve(true)
             }, 100)
           })
+        }else{
+            return new Promise((_, reject) => {
+              setTimeout(() => {
+                ElNotification({
+                    title: 'Warning',
+                    message: `Task not finished. Please write between ${minWords} and ${maxWords}  words.`,
+                    type: 'warning',
+                })
+                return reject(new Error('Error'))
+              }, 100)
+            })
+        }
+      }else{
+        return true;
       }
+
     }
     
 
@@ -547,6 +557,7 @@ export default {
         });
       } catch (error) {
         console.error("Failed to fetch initial messages:", error);
+        sendError({error_message:"Failed to fetch initial messages:"+ error});
       }
     
     }
@@ -588,6 +599,24 @@ export default {
         // console.log('Response Behavior', data);
       } catch (error) {
         console.error('Failed to send behavior:', error);
+        sendError({error_message:"Failed to send behavior:"+ error});
+        
+        // Handle specific error scenarios here if needed
+      }
+    }
+  }
+  const sendError = async (error) => {
+    if (behavior) {
+      let api_url = "/error-log";
+      if (user_id.value !== 'anonymous') {
+        api_url = `/error-log?user_id=${user_id.value}`;
+      }
+      try {
+        const { data } = await axios.post(api_url, error);
+        // console.log('Response Behavior', data);
+      } catch (error) {
+        console.error('Failed to send error:', error);
+        // sendError({error_message:"Failed to send error:"+ error});
         // Handle specific error scenarios here if needed
       }
     }
@@ -605,34 +634,35 @@ export default {
       }
     }
     catch (error) {
+      sendError({error_message:"Failed to fetch task:"+ error});
       console.error('Failed to fetch task:', error);
     }
   
   }
 
   const getTask = async () => {
-  if(!localData['task']||localData['task'].expire_time < new Date().getTime()){
+    if(!localData['task']||localData['task'].expire_time < new Date().getTime()){
       //if no task in local storage or task is expired
       try {
-      let api_url = "/random-task";
-      if(user_id.value !== 'anonymous'){
-        api_url = `/random-task?user_id=${user_id.value}`;
-      } 
-      const { data } = await axios.get(api_url);
-      console.log('Task:', data);
-      // delete data['final_submission']
-      // delete data['chat_id']
-      // message_id
-      // receipt_handle
-      data.expire_time = new Date().getTime() + MISSION_EXPIRE_TIME*1000;
-      localData['task']=data;
-      localStorage.setItem(user_id.value, JSON.stringify(localData))
-    } catch (error) {
-      console.error('Failed to fetch task:', error);
+        let api_url = "/random-task";
+        if(user_id.value !== 'anonymous'){
+          api_url = `/random-task?user_id=${user_id.value}`;
+        } 
+        const { data } = await axios.get(api_url);
+        console.log('Task:', data);
+        // delete data['final_submission']
+        // delete data['chat_id']
+        // message_id
+        // receipt_handle
+        data.expire_time = new Date().getTime() + MISSION_EXPIRE_TIME*1000;
+        localData['task']=data;
+        localStorage.setItem(user_id.value, JSON.stringify(localData))
+      } catch (error) {
+        console.error('Failed to fetch task:', error);
+        sendError({error_message:"Failed to fetch task:"+ error});
+      }
     }
-
-    }
-    if(localData['task'].task_name==='creative'){
+    if(localData['task'].task_name==='CREATIVE'){
         scenarioText.value = Constants.CREATIVE;
       }
     else{
@@ -666,7 +696,8 @@ export default {
       updateSharedVariable({submitted: true});
       router.push({ path: '/submitted' })
     } catch (error) {
-      console.error('Failed to fetch task:', error);
+      console.error('Failed to Submit task:', error);
+      sendError({error_message:"Failed to Submit task:"+ error});
     }
   }
 
@@ -680,6 +711,7 @@ export default {
       const { data } = await axios.post(api_url,{ip_address: ipAddress.value});
     } catch (error) {
       console.error('Failed to update IP:', error);
+      sendError({error_message:"Failed to update IP:"+ error});
     }
 
   }
@@ -687,8 +719,8 @@ export default {
   let controller = null; 
   const streamingResponse = async () => {
     messageSending.value = true;
-    let insufficent=false;
-    let savemessage = '';
+    let insufficient=false;
+    let save_message = '';
     let streaming_message = '';
     let api_url = "/openAI-streaming";
     if(user_id.value !== 'anonymous'){
@@ -735,9 +767,9 @@ export default {
         const chunk = decoder.decode(value);
 
         const lines = chunk.split("\n");
-        if(insufficent){
-          lines[0] = savemessage + lines[0];
-          insufficent=false;
+        if(insufficient){
+          lines[0] = save_message + lines[0];
+          insufficient=false;
         }
         console.log('Streaming Lines:', lines);
         // const parsedLines = lines.filter((line) => line.trim() !== ''  && !line.includes("[DONE]"))
@@ -752,8 +784,9 @@ export default {
                   return JSON.parse(line);
                 } catch (error) {
                   console.error("Failed to parse JSON line:", line);
-                  insufficent=true;
-                  savemessage = line;
+                  sendError({error_message:"Failed to parse JSON line:"+ line});
+                  insufficient=true;
+                  save_message = line;
 
                   console.error(error);
                   return null; // or handle the error in a different way
@@ -783,6 +816,7 @@ export default {
         console.error('Request Aborted:', error);
       }else{
         console.error('Failed to Streaming:', error);
+        sendError({error_message:"Failed to Streaming:"+ error});
       }
     }finally{
       controller = null;
@@ -809,6 +843,7 @@ export default {
 
     }catch(error){
       console.error('Failed to store message:', error);
+      sendError({error_message:"Failed to store message:"+ error});
     }
   }
 
@@ -914,7 +949,7 @@ export default {
         }
       }
     };
-
+    // unused function
     const clearTextArea = () => {
        ElMessageBox.confirm('Are you sure to delete all of the text?')
         .then(() => {
@@ -935,13 +970,11 @@ export default {
           done()
         })
         .catch((err) => {
-
-          // catch error
         })
 
      
     };
-
+    // unused function
     const handleCopiedButton = async(e) => {
       // console.log(e.target);
       let targetElement = e.target;
@@ -953,9 +986,6 @@ export default {
       const aiResponseElement = document.getElementById(`ai_feedback_${messageId}`);
       // console.log('Response element:', aiResponseElement);
       const copiedText = aiResponseElement.textContent;
-      // console.log('Copied Text:', copiedText);
-
-      // console.log('Copied Button');
       sendBehavior({
         id: Date.now(),
         content: copiedText,
@@ -1004,6 +1034,7 @@ export default {
       highlightedText.value='Copied Text:'+ pastedText + ' from '+ targetElementName
     };
 
+    // Highlight all text
     const handleHighlight = (e) => {
       
       if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
@@ -1030,7 +1061,7 @@ export default {
         } 
       }
     };
-
+    // Highlight text
     const handleMouseUp = (e) => {
       // console.log('Mouse Up');
 
@@ -1141,7 +1172,6 @@ export default {
         // console.log("Window width:", window.innerWidth); 
         // console.log('Mobile View');
         mobileDrawer.value = true;
-
       }
       else{
         mobileDrawer.value = false;
@@ -1161,6 +1191,7 @@ export default {
     // };
 
 
+    // unused function
     // The UI conditions parts
     const isLastChatbotMessage = (message) => {
       const lastIndex = messages.value.length - 1;
@@ -1168,6 +1199,7 @@ export default {
       return message.id === lastMessage.id && lastMessage.sender === 'assistant';
     };
 
+    // unused function
     // Resent the chatbot message
     const resentMessage = (up) => {
       const RESENT_PROMPT="Give me another idea?"
