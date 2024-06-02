@@ -1050,7 +1050,8 @@ export default {
       // console.log(e.clipboardData.getData('text/plain'));
       // console.log('Copied Text:', window.getSelection().toString());
       console.log('Copied Text:', e.target.parentElement.id);
-      const targetElementName = e.target.name||e.target.id||e.target.parentElement.id||e.target.parentElement.parentElement.id||e.target.nodeName;
+      const targetElementName = e.target.name||e.target.id||e.target.parentElement.id||e.target.parentElement.parentElement.id
+          ||e.target.parentElement.parentElement.parentElement.id||e.target.nodeName;
       sendBehavior({
         id: Date.now(),
         content: window.getSelection().toString(),
@@ -1090,7 +1091,10 @@ export default {
         //  console.log('select:', selectedText);
         if (selectedText) {
           // console.log('Selected Text:', selectedText);
-          const targetElementName = e.target.name||e.target.id||e.target.parentElement.id||e.target.parentElement.parentElement.id||e.target.nodeName;
+          
+          const targetElementName = e.target.name||e.target.id||e.target.parentElement.id||e.target.parentElement.parentElement.id
+          ||e.target.parentElement.parentElement.parentElement.id||e.target.nodeName;
+          console.log('targetElementName:', targetElementName);
           sendBehavior({
             id: Date.now(),
             content: selectedText,
@@ -1119,7 +1123,9 @@ export default {
       if (selectedText !== '') {
         // Do something with the selected text
         // console.log('Highlight Text:', selectedText);
-        const targetElementName = e.target.name||e.target.id||e.target.parentElement.id||e.target.parentElement.parentElement.id||e.target.nodeName;
+        const targetElementName = e.target.name||e.target.id||e.target.parentElement.id||e.target.parentElement.parentElement.id
+          ||e.target.parentElement.parentElement.parentElement.id||e.target.nodeName;
+        console.log('targetElementName:', targetElementName);
         // targetElementName.split('_');
         sendBehavior({
           id: Date.now(),
