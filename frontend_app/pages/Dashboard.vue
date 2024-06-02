@@ -727,7 +727,7 @@ export default {
           task_name:localData['task'].task_name,
           task_finished_time:missionTime,
           word_editing_count: wordEditingCount,
-          word_deleting_count: wordDeletingCount,
+          word_deleted_count: wordDeletingCount,
           character_revision_count: characterRevisionCount});
       ElNotification({
           title: 'Finish',
@@ -750,6 +750,8 @@ export default {
         ;
       } 
       const { data } = await axios.post(api_url,{ip_address: ipAddress.value});
+      // console.log('IP value:',ipAddress.value);
+      // console.log('Update IP:', data);
     } catch (error) {
       console.error('Failed to update IP:', error);
       sendError({error_message:"Failed to update IP:"+ error});
@@ -1275,9 +1277,8 @@ export default {
 
     // Listen the ipAddress
     const getIPFromAmazon=async()=> {
-      fetch("https://checkip.amazonaws.com/").then(res => res.text()).then(data => {
+      await fetch("https://checkip.amazonaws.com/").then(res => res.text()).then(data => {
         ipAddress.value = data;
-        // console.log('IP: '+data)
         })
     }
 

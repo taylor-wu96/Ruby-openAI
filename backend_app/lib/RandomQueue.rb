@@ -20,13 +20,14 @@ module RubyOpenAI
     end
 
     def random_task
+      fill_task(10) if queue_size.to_i.zero?
       task = @queue.receive_messages({
                                        max_number_of_messages: 1,
                                        receive_request_attempt_id: 'String'
                                      })
-      print('task data response:', task.first.data)
-      print('receipt_handle:', task.first.data.receipt_handle)
-      print('message_id:', task.first.data.message_id)
+      # print('task data response:', task.first.data)
+      # print('receipt_handle:', task.first.data.receipt_handle)
+      # print('message_id:', task.first.data.message_id)
 
       # task.first.body
       task.first.data
@@ -49,8 +50,7 @@ module RubyOpenAI
       raise RuntimeError, 'Could not send the delete request to SQS', e
     end
 
-    def fill_task
-      numoftask = 400
+    def fill_task(numoftask = 400)
       (1..numoftask).each do |i|
         @queue.send_message(queue_url: @queue, message_body: { task: i.even? ? 'CREATIVE' : 'PRACTICAL' }.to_json)
       end

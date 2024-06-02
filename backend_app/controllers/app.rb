@@ -290,6 +290,24 @@ module RubyOpenAI
         'No data' if Chat.first(user_id:).nil?
       end
 
+      r.get 'chat-to-csv' do
+        response['Content-Type'] = 'text/csv'
+        response.status = 200
+
+        user_id = r.params['user_id'] || 'anonymous'
+        if user_id == 'all'
+          data = Chat.all.map(&:values)
+          return GenerateCsv.generate_csv(data)
+        end
+
+        unless Chat.first(user_id:).nil?
+          data = Chat.where(user_id:).map(&:values)
+          return GenerateCsv.generate_csv(data)
+        end
+
+        'No data' if Chat.first(user_id:).nil?
+      end
+
       # test Queue
       r.get 'queue' do
         response['Content-Type'] = 'application/json'
@@ -304,6 +322,14 @@ module RubyOpenAI
         response['Content-Type'] = 'application/json'
         response.status = 200
         queue.fill_task.to_json
+      end
+
+      r.get 'clear-queue' do
+        queue = RandomQueue.new(Api.config)
+        queue.clear_queue
+        response['Content-Type'] = 'application/json'
+        response.status = 200
+        { success: true, message: 'Queue cleared' }.to_json
       end
 
       r.get 'random-task' do
