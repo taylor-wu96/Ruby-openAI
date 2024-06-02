@@ -297,13 +297,13 @@
             <div style="font-size: 0.9rem;line-height: 150%;font-weight: 400; padding: 0px 10px;">
               <ul >
                 <li>
-                  You can keep all of your notes and answer here before submission.
+                  Keep all of your notes and answer here before submission.
                 </li>
                 <li>
                   See the word counts and elapsed time below the response area.
                 </li>
                 <li>
-                  We expect you to complete your responses around 10 minutes. When you exceed 10 minutes, we will give you a notice message."
+                  expect to complete your answer around 10 minutes. If you go over this time, system will notify you.
                 </li>
               </ul>
             </div>
@@ -316,8 +316,9 @@
             title="Task AI"
           >
             <div style="font-size: 0.9rem;line-height: 150%;font-weight: 400; padding: 0px 10px;">
-              Task AI is an AI chatbot service. We have used the current best AI tools, and trained it to the travel context you are working on.  <br/>
-              It can help you generate or refine your ideas and words. Scroll down to see the latest message.
+              Task AI is a chatbot service designed for travel-related tasks.  <br/>
+              With the most powerful AI model, it helps you generate and refine ideas   <br/>
+              Please scroll down to see the latest message.
             </div>
           </el-tour-step>
 
@@ -332,8 +333,10 @@
             
           >
             <div style="font-size: 0.9rem;line-height: 150%;font-weight: 400; padding: 0px 10px;">
-              After you finish the task, please click the toggle to confirm that you have finished the answer. <br/>
-              Then you can click the submit button.
+              <ol>
+                <li>Open the toggle below to confirm that you have finished your final answer.</li>
+                <li>Then click the button to submit the task.</li>
+              </ol>
             </div>
           
           </el-tour-step>
@@ -556,7 +559,7 @@ export default {
     // TODO: check the error handling
     const checkTaskFinish= () => {
       if(!hasFinishTask.value){
-        if(textAreaWordCount.value>minWords && textAreaWordCount.value<maxWords){
+        if(textAreaWordCount.value>=minWords && textAreaWordCount.value<=maxWords){
           return new Promise((resolve) => {
             setTimeout(() => {
               ElNotification({
@@ -967,7 +970,10 @@ export default {
             type: 'Word Add/Remove',
             target_object: 'NoteArea',
             log_time: new Date().toISOString(),
-          })  
+          })
+          if(textAreaWordCount.value<minWords || textAreaWordCount.value>maxWords){
+            hasFinishTask.value = false;
+          }
         }
         if(previousWordCount === textAreaWordCount.value-1){
          
