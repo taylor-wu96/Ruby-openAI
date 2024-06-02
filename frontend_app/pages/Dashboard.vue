@@ -476,6 +476,14 @@ export default {
       await getTask();
       await getIPFromAmazon();
       await updateIp();
+      focus_leave=new Date().getTime();
+      sendBehavior({
+            id: Date.now(),
+            content: 'User is open the page on' + Date.now().toString(),
+            type: 'Initial',
+            target_object: 'Page',
+            log_time: new Date().toISOString(),
+       })  
     })
 
     // Don't forget to clean up the event listener on component unmount
@@ -494,6 +502,7 @@ export default {
         }
       // setInterval(setTimer, TIME_GAP*1000);
       localData['tour']=false;
+
       localStorage.setItem(user_id.value, JSON.stringify(localData));
     };
 
@@ -1166,52 +1175,28 @@ export default {
     };
 
     document.addEventListener('visibilitychange', () => {
+      console.log('Visibility Change:', document.visibilityState);
     if (document.visibilityState === 'visible') {
       // console.log('User is focused on the page');
-      if(focus_leave===0){
-        sendBehavior({
-            id: Date.now(),
-            content: 'User is open the page on' + Date.now().toString(),
-            type: 'Initial',
-            target_object: 'Page',
-            log_time: new Date().toISOString(),
-       })  
-      }
-      else{
-         sendBehavior({
-            id: Date.now(),
-            content: (new Date().getTime()-focus_leave)/1000,
-            type: 'Leaving Time',
-            target_object: 'Page',
-            log_time: new Date().toISOString(),
-       })  
-      }
-      // Perform actions when the page is in focus
-
+      sendBehavior({
+          id: Date.now(),
+          content: (new Date().getTime()-focus_leave)/1000,
+          type: 'Leaving Time',
+          target_object: 'Page',
+          log_time: new Date().toISOString(),
+      })  
        highlightedText.value='User is focused on the page'
 
     } else {
-      if(focus_leave===0){
-        sendBehavior({
-            id: Date.now(),
-            content: 'User is open the page on' + Date.now().toString(),
-            type: 'Initial',
-            target_object: 'Page',
-            log_time: new Date().toISOString(),
-       })  
-      }
-      else{
-          sendBehavior({
-              id: Date.now(),
-              content: (new Date().getTime()-focus_leave)/1000,
-              type: 'Stay Time',
-              target_object: 'Page',
-              log_time: new Date().toISOString(),
-        })  
-      }
+      sendBehavior({
+          id: Date.now(),
+          content: (new Date().getTime()-focus_leave)/1000,
+          type: 'Stay Time',
+          target_object: 'Page',
+          log_time: new Date().toISOString(),
+      })  
       // console.log('User has left the page');
       // Perform actions when the page is not in focus
-      
     }
     focus_leave=new Date().getTime();
     });
