@@ -50,7 +50,7 @@
                 />
                 <div class="note_panel">
                   <div class="text-area_info">
-                    <div><el-icon  size="small"><Finished /></el-icon> Word: {{ textAreaWordCount }} ( {{minWords}}~{{maxWords}} ) </div>
+                    <div><el-icon size="small"><Finished /></el-icon> Word: {{ textAreaWordCount }} ( {{minWords}}~{{maxWords}} ) </div>
                     <div> <el-icon size="small"><Timer /></el-icon> Time Left:&nbsp; <span v-html="timeSeconds"></span> </div>
                   </div>
                   <el-form ref="submitTaskRef"  label-width="auto" >
@@ -79,13 +79,13 @@
               <div style="padding:5px 4px">
                   <el-popover
                     placement="top-start"
-                    title="Task AI"
+                    title="AI Assistant"
                     :width="400"
                     trigger="hover"
-                    content="Task AI is a chatbot powered by GPT-4o. It can help you with various tasks. especially for text-related tasks."
+                    content="AI Assistant is a chatbot powered by GPT-4o. It can help you with various tasks. especially for text-related tasks."
                   >
                     <template #reference>
-                       <el-text  size="large" tag="b" class="chat-title"> Task AI
+                       <el-text  size="large" tag="b" class="chat-title"> AI Assistant
                   <el-tag size="small" type='info' effect="dark"
                   round>Powered by GPT</el-tag>   </el-text>  
                     </template>
@@ -170,7 +170,7 @@
         </el-button>
 
         <!-- @closed="scrollToBottom()"  -->
-        <el-drawer class="inner-drawer" @open="scrollToBottom();" v-model="drawer" size="80%" title="Task AI" >
+        <el-drawer class="inner-drawer" @open="scrollToBottom();" v-model="drawer" size="80%" title="AI Assistant" >
            <div class="m-chat-area">
               <el-scrollbar class="scroll-bar" ref="scrollContainer">
                 <div v-for="message in messages" :key="message.id" class="message">
@@ -313,10 +313,10 @@
           <el-tour-step
             :placement="!mobileDrawer?'left':'top-start'"
             :target="chatBotRef?.$el"
-            title="Task AI"
+            title="AI Assistant"
           >
             <div style="font-size: 0.9rem;line-height: 150%;font-weight: 400; padding: 0px 10px;">
-              Task AI is a chatbot service designed for travel-related tasks.  <br/>
+              AI Assistant is a chatbot service designed for travel-related tasks.  <br/>
               With the most powerful AI model, it helps you generate and refine ideas   <br/>
               Please scroll down to see the latest message.
             </div>
