@@ -51,7 +51,7 @@
                 <div class="note_panel">
                   <div class="text-area_info">
                     <div><el-icon  size="small"><Finished /></el-icon> Word: {{ textAreaWordCount }} ( {{minWords}}~{{maxWords}} ) </div>
-                    <div> <el-icon size="small"><Timer /></el-icon> Time Left: <span v-html="timeSeconds"></span> </div>
+                    <div> <el-icon size="small"><Timer /></el-icon> Time Left:&nbsp; <span v-html="timeSeconds"></span> </div>
                   </div>
                   <el-form ref="submitTaskRef"  label-width="auto" >
                       <div class="submit_block">
@@ -529,7 +529,7 @@ export default {
         timeSeconds.value = `<span style="color: rgb(190, 79, 79);"> You have spent ${Math.floor(MISSION_TIME/60)} minutes</span>`;
       }
       else if(missionTimeLeft >0){
-        timeSeconds.value = pad(Math.floor(missionTimeLeft / 60)) +" : "+ pad(missionTimeLeft % 60);
+        timeSeconds.value = " " + pad(Math.floor(missionTimeLeft / 60)) +":"+ pad(missionTimeLeft % 60);
       }
     }
 
@@ -1389,7 +1389,7 @@ export default {
   flex-direction: column; /* Added */
   align-items: center;
   flex: 1;  
-  cursor: not-allowed;
+
   /* gap: 10px; */
 
   /* padding-right: 20px; Add some spacing between columns */
@@ -1447,6 +1447,7 @@ export default {
   user-select: none; /* Standard syntax */
   overflow: hidden;
   padding: 10px 20px;
+  cursor: not-allowed;
 }
 /* .scenario::after {
   content: "» » » »";
