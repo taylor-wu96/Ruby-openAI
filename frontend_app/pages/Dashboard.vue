@@ -27,7 +27,7 @@
                 <el-scrollbar always max-height="100%" height="100%">
                   <div class="scenario-title">
                   Your Answer
-                  <el-text size="small" tag="i"> Enter the all of task in the following input field </el-text>
+                  <el-text size="small" tag="i"> Enter the your ideas for Part 1 and Part 2 below </el-text>
                 </div>
                 <el-input
                   ref="textareaRef"
