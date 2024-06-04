@@ -3,12 +3,12 @@
     <el-row class="brand-area">
       <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px; margin-right: 10px;" /> 
       <div class="brand-class">
-        Co-here | Your Personal Task Workspace
+        Co-here | Your Travel Ideas Workspace
       </div> 
     </el-row>
     <el-card class="submission-card">
       <img src="../static/finish.png" alt="Finish" class="submit-img" /> 
-      <div  class="submit-text"> Thank you for your submission!</div>
+      <div  class="submit-text"> Your answer is recorded.</div>
       <el-button 
       size="large" 
       color="#626aef" 
@@ -16,7 +16,7 @@
       :href="surveyUrl"
       target="_blank" 
       round 
-      class="submit-link"> Go to post survey</el-button>
+      class="submit-link"> Complete the short post-survey to finish!</el-button>
     </el-card>
   </div>
 </template>

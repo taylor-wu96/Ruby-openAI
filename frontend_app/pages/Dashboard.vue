@@ -6,7 +6,7 @@
           <el-row :gutter="20" class="brand-area">
             <img src="../static/logo.png" alt="PopAi" style="width: 40px; height: 40px; margin-right: 10px;" /> 
             <div class="brand-class">
-              Co-here | Your Personal Task Workspace
+              Co-here | Your Travel Ideas Workspace
             </div> 
             <el-button style="margin-left:8px;" round ref="infoRef" size="small" type="info" icon="InfoFilled" @click="open = true">
               Help
@@ -50,8 +50,8 @@
                 />
                 <div class="note_panel">
                   <div class="text-area_info">
-                    <div><el-icon size="small"><Finished /></el-icon> Word: {{ textAreaWordCount }} ( {{minWords}}~{{maxWords}} ) </div>
-                    <div> <el-icon size="small"><Timer /></el-icon> Time Left:&nbsp; <span v-html="timeSeconds"></span> </div>
+                    <div><el-icon size="small"><Finished /></el-icon> Word count: {{ textAreaWordCount }} ( {{minWords}}-{{maxWords}} max ) </div>
+                    <div> <el-icon size="small"><Timer /></el-icon>Try to finish in:&nbsp; <span v-html="timeSeconds"></span> </div>
                   </div>
                   <el-form ref="submitTaskRef"  label-width="auto" >
                       <div class="submit_block">
@@ -87,7 +87,7 @@
                     <template #reference>
                        <el-text  size="large" tag="b" class="chat-title"> AI Assistant
                   <el-tag size="small" type='info' effect="dark"
-                  round>Powered by GPT</el-tag>   </el-text>  
+                  round>Powered by ChatGPT</el-tag>   </el-text>  
                     </template>
                   </el-popover>
               </div>
@@ -244,36 +244,44 @@
         </el-drawer>
 
         <!-- Tour Code -->
+        <!-- #000000df -->
+        <el-tour :show-close="false" @finish="tourFinished" :mask="{ color: 'rgba(0, 0, 0, 0.82)' }" v-model="open" type="default" class="web-tour" :content-style="{ borderRadius:'12px' ,boxShadowing:'rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px'}" >
+          <el-tour-step  :next-button-props="{children:'Next, see the introduction ...' }" title="Co-here Intro Video" :content-style="{ maxWidth: '800px' ,minHeight:'520px', width:'80%', padding:'20px 40px',borderRadius:'12px' ,boxShadowing:'rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px'}">
+            <div class="video">
+              <iframe src="https://drive.google.com/file/d/1GtWYq98U2WJRu3bAcCr8vKEBtR0aWj77/preview" width="640" height="480" allow="autoplay" ></iframe>
+            </div>
+          </el-tour-step>
 
-        <el-tour :show-close="false" @finish="tourFinished" :mask="{ color: '#000000df', }" v-model="open" type="default" >
 
-          <el-tour-step title="Introduction" :content-style="{ maxWidth: '800px', width:'80%', padding:'40px'}">
+          <el-tour-step title="Introduction" :next-button-props=" {children:'Next, see where to do the task...'}" :content-style="{ maxWidth: '800px', width:'80%', padding:'40px',borderRadius:'12px' ,boxShadowing:'rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px'}">
             <h2>About the Task: </h2>
             <br/>
-            <div style="font-size: 1.125rem;line-height: 150%;font-weight: 400; ">In this website You have to finish a task in a given scenario. We hope to leverage your ideas to help us come up with better plans within a limited time. <br/> To reward the best participants, we will select the top submissions based on completeness, originality, and clarity.These top participants <span style="color: #eb7b5b;font-weight:bold;">will receive additional rewards </span>, which will be distributed through Prolific and communicated via private messages.</div>
+            <div style="font-size: 1.125rem;line-height: 150%;font-weight: 400; ">We are developing a website to gather people's ideas for travel - we will give you a short task to complete. We hope to leverage your ideas to help us come up with better plans within a limited time. <br/> To reward the best participants, we will select the top submissions based on completeness, originality, and clarity.These top participants <span style="color: #eb7b5b;font-weight:bold;">will receive additional rewards </span>, which will be distributed through Prolific and communicated via private messages.</div>
             <br/>
             <div style="font-size: 1.125rem;line-height: 150%;font-weight: 400;">
               <ul style="padding: 10px;">
                 <li>
-                  During the task, we encourage you to use your existing knowledge and  the AI assistant we provide. 
+                  During the task, you may use your existing knowledge and the AI assistant we provide. 
                 </li>
                 <li>
                   Avoid searching for information on other websites.The accuracy of the facts is not our primary concern. 
                 </li>
                 <li>
-                  Instead, we are interested in <span style="color: #eb7b5b;font-weight:bold;">whether your responses sufficiently reflect your own original ideas </span> .
+                  <span style="color: #eb7b5b;font-weight:bold;">Instead, we are interested to hear your own authentic ideas.</span> .
                 </li>
               </ul>
             </div>
             <br/>
             <div style="font-size: 1.125rem;line-height: 150%;font-weight: 400;">
-              Below, we will provide a step-by-step introduction to the website's UI to help you quickly navigate the system.
+              Below, we will provide <span style="color: #eb7b5b;font-weight:bold;"> a step-by-step introduction </span> to the website's interface to help you quickly navigate the system.
             </div>
           </el-tour-step>
          
           <el-tour-step
             :target="scenarioRef?.$el"
             title="Scenario"
+            :next-button-props=" {children:'Next, see where where to enter your answer...'}"
+            
           >
           <div style="font-size: 0.9rem;line-height: 150%;font-weight: 400; padding: 0px 10px;">
               <ul >
@@ -293,6 +301,8 @@
           <el-tour-step
             :target="noteRef?.$el"
             title="Your Answer"
+            :next-button-props=" {children:'Next, see the AI assistant that you can use...'}"
+            
           >
             <div style="font-size: 0.9rem;line-height: 150%;font-weight: 400; padding: 0px 10px;">
               <ul >
@@ -314,6 +324,7 @@
             :placement="!mobileDrawer?'left':'top-start'"
             :target="chatBotRef?.$el"
             title="AI Assistant"
+            :next-button-props=" {children:'Next, see where you can ask questions...'}"
           >
             <div style="font-size: 0.9rem;line-height: 150%;font-weight: 400; padding: 0px 10px;">
               AI Assistant is a chatbot service designed for travel-related tasks.  <br/>
@@ -326,6 +337,7 @@
             :target="chatInputRef?.$el"
             title="Question to AI"
             description="Type the question you want to ask the AI assistant here, and then click the send button to await a response."
+            :next-button-props=" {children:'Next, see how to submit your answer...'}"
           />
           <el-tour-step
             :target="submitTaskRef?.$el"
@@ -345,8 +357,11 @@
             :target="infoRef?.$el"
             title="Want to see the tour again?"
             description="Just click this button to see the tour again."
-            :next-button-props=" {children:'Let Start!'}"
+            :next-button-props=" {children:`Let's Start!`}"
           />
+          <template #indicators="{ current, total }">
+            <el-text> Step : {{ current + 1 }} / {{ total }}</el-text>
+          </template>
         </el-tour>
 
       </el-container>
@@ -359,11 +374,12 @@ import Constants from "../constant/Constants.vue";
 import axios from "axios";
 import {marked} from "marked";
 import { ref, watch, nextTick } from 'vue';
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted ,h } from 'vue';
 import { useRoute , useRouter } from 'vue-router';
 import { watchEffect } from 'vue';
 import { ElMessage,ElNotification  } from 'element-plus'
 import { useStore } from 'vuex'
+
 
 
 export default {
@@ -396,7 +412,7 @@ export default {
     const TIME_GAP =Constants.TIME_GAP;
     const MISSION_TIME = Constants.MISSION_TIME;
     const MISSION_EXPIRE_TIME = Constants.MISSION_EXPIRE_TIME;
-    const timeSeconds = ref("10:00");
+    const timeSeconds = ref("10m:00s");
 
     let missionTimeStamp = 0;
 
@@ -411,7 +427,6 @@ export default {
       store.commit('updateSharedVariable', obj)
     }
 
-   
 
     const currentTemp=ref(Constants.DEFAULTS_TEMP)
     const MAX_TEMP=Constants.MAX_TEMP
@@ -509,6 +524,24 @@ export default {
       localStorage.setItem(user_id.value, JSON.stringify(localData));
     };
 
+    // const renderNextButton =  {
+  
+    //     children: h(
+    //     'ElButton',
+    //     { type: 'info' },
+    //     'Next, see where to do the task...'
+    //   )
+    // };
+
+    const renderNextButton = {
+      children: () => h(
+        'el-button',
+        { type: 'info', onClick: handleClick },
+        'Next, see where to do the task...'
+      )
+    };
+
+
 
     // Timer
     function setTimer() {
@@ -526,10 +559,10 @@ export default {
           message: `You have spent ${Math.floor(MISSION_TIME/60)} minutes on the task.`,
           type: 'info',
         })
-        timeSeconds.value = `<span style="color: rgb(190, 79, 79);"> You have spent ${Math.floor(MISSION_TIME/60)} minutes</span>`;
+        timeSeconds.value = `<span style="color: rgb(190, 79, 79);"> Please submit as soon as possible!</span>`;
       }
       else if(missionTimeLeft >0){
-        timeSeconds.value = " " + pad(Math.floor(missionTimeLeft / 60)) +":"+ pad(missionTimeLeft % 60);
+        timeSeconds.value = " " + pad(Math.floor(missionTimeLeft / 60)) +"m:"+ pad(missionTimeLeft % 60)+"s";
       }
     }
 
@@ -1182,29 +1215,28 @@ export default {
 
     document.addEventListener('visibilitychange', () => {
       console.log('Visibility Change:', document.visibilityState);
-    if (document.visibilityState === 'visible') {
-      // console.log('User is focused on the page');
-      sendBehavior({
-          id: Date.now(),
-          content: (new Date().getTime()-focus_leave)/1000,
-          type: 'Leaving Time',
-          target_object: 'Page',
-          log_time: new Date().toISOString(),
-      })  
-       highlightedText.value='User is focused on the page'
-
-    } else {
-      sendBehavior({
-          id: Date.now(),
-          content: (new Date().getTime()-focus_leave)/1000,
-          type: 'Stay Time',
-          target_object: 'Page',
-          log_time: new Date().toISOString(),
-      })  
-      // console.log('User has left the page');
-      // Perform actions when the page is not in focus
-    }
-    focus_leave=new Date().getTime();
+      if (document.visibilityState === 'visible') {
+        // console.log('User is focused on the page');
+        sendBehavior({
+            id: Date.now(),
+            content: (new Date().getTime()-focus_leave)/1000,
+            type: 'Leaving Time',
+            target_object: 'Page',
+            log_time: new Date().toISOString(),
+        })  
+        highlightedText.value='User is focused on the page'
+      } else {
+        sendBehavior({
+            id: Date.now(),
+            content: (new Date().getTime()-focus_leave)/1000,
+            type: 'Stay Time',
+            target_object: 'Page',
+            log_time: new Date().toISOString(),
+        })  
+        // console.log('User has left the page');
+        // Perform actions when the page is not in focus
+      }
+      focus_leave=new Date().getTime();
     });
     
     window.addEventListener('resize', () => {
@@ -1274,6 +1306,7 @@ export default {
     }
 
     return { messages,
+      renderNextButton,
       timeSeconds,
       messageSending,
       minWords,
@@ -1750,6 +1783,17 @@ export default {
   vertical-align:middle;  
   padding:0;
   font-size: 1.1rem;
+}
+.video{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0px 0px 20px 0px;
+}
+iframe{
+  width: 100%;
+  border: none;
+  border-radius: 10px;
 }
 
 
