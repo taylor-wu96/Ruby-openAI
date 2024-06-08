@@ -20,7 +20,7 @@ module RubyOpenAI
     end
 
     def random_task
-      fill_task(10) if queue_size.to_i.zero?
+      fill_task(10) if queue_size.to_i <= 2
       task = @queue.receive_messages({
                                        max_number_of_messages: 1,
                                        receive_request_attempt_id: 'String'

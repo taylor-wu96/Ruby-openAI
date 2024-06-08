@@ -745,6 +745,7 @@ export default {
         localStorage.setItem(user_id.value, JSON.stringify(localData))
       } catch (error) {
         console.error('Failed to fetch task:', error);
+        location.reload();
         sendError({error_message:"Failed to fetch task:"+ error});
       }
     }
