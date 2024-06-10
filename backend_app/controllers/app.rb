@@ -258,6 +258,8 @@ module RubyOpenAI
         response.status = 200
 
         user_id = r.params['user_id'] || 'anonymous'
+        return 'No data' if Errorlog.all.map(&:values).empty?
+
         if user_id == 'all'
           data = Errorlog.all.map(&:values)
           return GenerateCsv.generate_csv(data)
@@ -317,11 +319,12 @@ module RubyOpenAI
       end
 
       r.get 'reset-queue' do
+        num_of_task = r.params['num'].to_i || 400
         queue = RandomQueue.new(Api.config)
         queue.clear_queue
         response['Content-Type'] = 'application/json'
         response.status = 200
-        queue.fill_task.to_json
+        queue.fill_task(num_of_task).to_json
       end
 
       r.get 'clear-queue' do

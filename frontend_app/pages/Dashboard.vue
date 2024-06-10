@@ -13,7 +13,7 @@
             </el-button>   
              </el-row>
           <el-row  :gutter="20">
-            <el-col :xs="24" :sm="24" :md="24" :lg="13" :xl="13" class="task-area cloudy-glass">
+            <el-col :xs="24" :sm="24" :md="14" :lg="13" :xl="13" class="task-area cloudy-glass">
               <el-card ref="scenarioRef" class="scenario">
                 <div class="scenario-scroll">
                   <div class="scenario-title">
@@ -24,7 +24,7 @@
                 </div>
               </el-card>
               <el-card ref="noteRef" class="note">
-                <el-scrollbar always max-height="100%" height="100%">
+                <el-scrollbar always height="100%" >
                   <div class="scenario-title">
                   Your Answer
                   <el-text size="small" tag="i"> Enter the your ideas for Part 1 and Part 2 below </el-text>
@@ -52,18 +52,20 @@
                   <div class="text-area_info">
                     <div><el-icon size="small"><Finished /></el-icon> Word count: {{ textAreaWordCount }} ( {{minWords}}-{{maxWords}} max ) </div>
                     <div> <el-icon size="small"><Timer /></el-icon>Try to finish in:&nbsp; <span v-html="timeSeconds"></span> </div>
+                    <div class="notice">
+                      <el-text size="small">* Please remain within this window and focus on completing the entire task. </el-text>
+                    </div>
                   </div>
-                  <el-form ref="submitTaskRef"  label-width="auto" >
-                      <div class="submit_block">
-                        <el-form-item label="I have finished">
-                          <!-- active-icon="Check" inactive-icon="Close" -->
-                            <el-switch v-model="hasFinishTask" :before-change="checkTaskFinish"  />
-                          </el-form-item>
-                          <el-form-item>
-                            <el-button  type="info" :disabled="!hasFinishTask" round @click="onSubmitTask">Submit</el-button>
-                          </el-form-item>
-                      </div>
+                  <el-form ref="submitTaskRef"  label-width="auto" class="submit_block">
+                    <el-form-item label="I have finished">
+                      <!-- active-icon="Check" inactive-icon="Close" -->
+                        <el-switch v-model="hasFinishTask" :before-change="checkTaskFinish"  />
+                      </el-form-item>
+                      <el-form-item>
+                        <el-button  type="info" :disabled="!hasFinishTask" round @click="onSubmitTask">Submit</el-button>
+                      </el-form-item>
                   </el-form>
+
                   
                 </div>
 
@@ -74,7 +76,7 @@
 
             </el-card>
             </el-col>
-            <el-col v-if="!mobileDrawer" ref="chatBotRef"  :xs="24" :sm="24" :md="24" :lg="11" :xl="11" class="chat-area cloudy-glass invisible">
+            <el-col v-if="!mobileDrawer" ref="chatBotRef"  :xs="24" :sm="24" :md="10" :lg="11" :xl="11" class="chat-area cloudy-glass invisible">
               <!-- Chat messages will go here -->
               <div style="padding:5px 4px">
                   <el-popover
@@ -244,11 +246,10 @@
         </el-drawer>
 
         <!-- Tour Code -->
-        <!-- #000000df -->
-        <el-tour :show-close="false" @finish="tourFinished" :mask="{ color: 'rgba(0, 0, 0, 0.82)' }" v-model="open" type="default" class="web-tour" :content-style="{ borderRadius:'12px' ,boxShadowing:'rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px'}" >
+        <el-tour :close-on-press-escape="attendTour" :show-close="attendTour" @finish="tourFinished" :mask="{ color: 'rgba(0, 0, 0, 0.82)' }" v-model="open" type="default" class="web-tour" :content-style="{ borderRadius:'12px' ,boxShadowing:'rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px'}" >
           <el-tour-step  :next-button-props="{children:'Next, see the introduction ...' }" title="Co-here Intro Video" :content-style="{ maxWidth: '800px' ,minHeight:'520px', width:'80%', padding:'20px 40px',borderRadius:'12px' ,boxShadowing:'rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px'}">
             <div class="video">
-              <iframe width="560" height="500" src="https://www.youtube-nocookie.com/embed/2B4wmbdMrc4?si=6vW6uB7JPcdf9OX7" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+              <iframe width="560" height="500" src="https://www.youtube-nocookie.com/embed/2B4wmbdMrc4?si=6vW6uB7JPcdf9OX7&autoplay=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             </div>
           </el-tour-step>
 
@@ -402,9 +403,10 @@ export default {
     const user_id = ref('anonymous');
     let promptStartTime=0
     let promptEndTime=0
-    let wordEditingCount=0
-    let wordDeletingCount=0
-    let characterRevisionCount=0
+    const wordEditingCount=ref(0)
+    
+    const wordDeletingCount=ref(0)
+    const characterRevisionCount=ref(0)
     let previousCharacterCount=0
     let timeId
 
@@ -413,8 +415,9 @@ export default {
     const MISSION_TIME = Constants.MISSION_TIME;
     const MISSION_EXPIRE_TIME = Constants.MISSION_EXPIRE_TIME;
     const timeSeconds = ref("10m:00s");
+    
 
-    let missionTimeStamp = 0;
+    const missionTimeStamp = ref(new Date().getTime());
 
 
     // streaming variables
@@ -431,7 +434,8 @@ export default {
     const currentTemp=ref(Constants.DEFAULTS_TEMP)
     const MAX_TEMP=Constants.MAX_TEMP
     const MIN_TEMP=Constants.MIN_TEMP
-    let focus_leave=0
+    // try to fix the mounted issue
+    let focus_leave=new Date().getTime();
 
     //  test for tour
     const chatInputRef = ref(null)
@@ -444,16 +448,42 @@ export default {
 
     const mobileDrawer = ref(window.innerWidth<992?true:false)
     const open = ref(true)
+    const attendTour=ref(false)
     let localData ={}
 
     // input row
     const textAreaRowRef = ref(8);
 
+    // watchEffect(async () => {
+    //   // ...
+    //   console.log('Change Url:');
+    //   user_id.value = route.query[Constants.URL_USER_PARAMS] || 'anonymous';
+    //   if(user_id.value === 'anonymous'){
+    //     router.push({ path: '/missing' })
+    //   }
+    //   updateSharedVariable({'user_id': user_id.value});
+    //   localData['user_id'] = user_id.value
+    //   if (!localStorage.getItem(user_id.value)) {
+    //     localStorage.setItem(user_id.value, JSON.stringify(localData));
+    //   } else {
+    //     const data = await localStorage.getItem(user_id.value);
+    //     localData = JSON.parse(data);
+    //     textArea.value = localData['storage_notes']||'';
+    //     wordEditingCount = localData['word_editing_count']||0;
+    //     wordDeletingCount = localData['word_deleted_count']||0;
+    //     characterRevisionCount = localData['character_revision_count']||0;
+    //     if(textArea.value){
+    //       previousCharacterCount = textArea.value.length;
+    //       textAreaWordCount.value = textArea.value.trim().split(/\s+|\n+/).length;
+    //     }
+    //     if(localData['tour']===false){
+    //       open.value = localData['tour'];
+    //       timeId = setInterval(setTimer, TIME_GAP*1000);
+    //     }
+    //   }
+    // });
 
-
-
-    watchEffect(async () => {
-      // ...
+    const readStorage=async()=> {
       user_id.value = route.query[Constants.URL_USER_PARAMS] || 'anonymous';
       if(user_id.value === 'anonymous'){
         router.push({ path: '/missing' })
@@ -466,16 +496,21 @@ export default {
         const data = await localStorage.getItem(user_id.value);
         localData = JSON.parse(data);
         textArea.value = localData['storage_notes']||'';
+        wordEditingCount.value = localData['wordEditingCount']||0;
+        wordDeletingCount.value = localData['wordDeletingCount']||0;
+        characterRevisionCount.value = localData['characterRevisionCount']||0;
         if(textArea.value){
           previousCharacterCount = textArea.value.length;
           textAreaWordCount.value = textArea.value.trim().split(/\s+|\n+/).length;
         }
+        missionTimeStamp.value=localData['missionTimeStamp']||new Date().getTime();
         if(localData['tour']===false){
           open.value = localData['tour'];
+          attendTour.value = !localData['tour'];
           timeId = setInterval(setTimer, TIME_GAP*1000);
         }
       }
-    });
+    };
 
     watch(messages, () => {
       // Wait for the next DOM update to scroll
@@ -487,25 +522,27 @@ export default {
 
     // console.log('Query Parameters:', route.query);
     onMounted(async() => {
-
+      focus_leave=new Date().getTime();
       document.addEventListener('keydown', handleHighlight);
+      await readStorage();
       await checkFinishTask(); 
       await initialMessages();
       await getTask();
       await getIPFromAmazon();
       await updateIp();
-      focus_leave=new Date().getTime();
       sendBehavior({
             id: Date.now(),
             content: 'User is open the page on' + Date.now().toString(),
             type: 'Initial',
             target_object: 'Page',
             log_time: new Date().toISOString(),
-       })  
+       }); 
+      document.addEventListener('visibilitychange',handleVisibilityChange);  
     })
 
     // Don't forget to clean up the event listener on component unmount
     onUnmounted(() => {
+      document.removeEventListener('visibilitychange',handleVisibilityChange);
       document.removeEventListener('keydown', handleHighlight);
       // remove the interval in timer
       clearInterval(timeId);
@@ -514,45 +551,27 @@ export default {
 
     // Tour 
     const tourFinished = () => {
-      // console.log('Tour Finished');
-      if(localData['tour']!==false){
-          timeId = setInterval(setTimer, TIME_GAP*1000);
+      console.log('Tour Finished');
+      if(localData['tour']===undefined || localData['tour']===true){
+          missionTimeStamp.value=new Date().getTime()
+          localData['missionTimeStamp']=missionTimeStamp.value;
+          timeId = setInterval(setTimer, TIME_GAP*1000); 
         }
-      // setInterval(setTimer, TIME_GAP*1000);
       localData['tour']=false;
-
+      attendTour.value=true;
       localStorage.setItem(user_id.value, JSON.stringify(localData));
     };
-
-    // const renderNextButton =  {
-  
-    //     children: h(
-    //     'ElButton',
-    //     { type: 'info' },
-    //     'Next, see where to do the task...'
-    //   )
-    // };
-
-    const renderNextButton = {
-      children: () => h(
-        'el-button',
-        { type: 'info', onClick: handleClick },
-        'Next, see where to do the task...'
-      )
-    };
-
-
 
     // Timer
     function setTimer() {
     
-      if(missionTimeStamp===0){
-        missionTimeStamp=new Date().getTime()
-      };
+      // if(missionTimeStamp.value===0){
+      //   missionTimeStamp.value=new Date().getTime()
+      // };
       let currentTime = new Date().getTime();
       // console.log('Current Time:',missionTimeStamp,"  : ", currentTime);
 
-      let missionTimeLeft=MISSION_TIME-Math.floor((currentTime-missionTimeStamp)/1000);
+      let missionTimeLeft=MISSION_TIME-Math.floor((currentTime-missionTimeStamp.value)/1000);
       if( missionTimeLeft <= 0 && missionTimeLeft >= -TIME_GAP){
         ElNotification({
           title: 'Reminder',
@@ -765,16 +784,16 @@ export default {
         api_url = `/submit-task?user_id=${user_id.value}`
         ;
       } 
-      const missionTime=Math.floor((new Date().getTime()-missionTimeStamp)/1000);
+      const missionTime=Math.floor((new Date().getTime()-missionTimeStamp.value)/1000);
       const { data } = await axios.post(api_url,
         {task_description: textArea.value , 
           message_id: localData['task'].message_id,
           receipt_handle: localData['task'].receipt_handle,
           task_name:localData['task'].task_name,
           task_finished_time:missionTime,
-          word_editing_count: wordEditingCount,
-          word_deleted_count: wordDeletingCount,
-          character_revision_count: characterRevisionCount});
+          word_editing_count: wordEditingCount.value,
+          word_deleted_count: wordDeletingCount.value,
+          character_revision_count: characterRevisionCount.value});
       ElNotification({
           title: 'Finish',
           message: "You have Successfully Submit the task!",
@@ -873,7 +892,7 @@ export default {
                   return JSON.parse(line);
                 } catch (error) {
                   console.error("Failed to parse JSON line:", line);
-                  sendError({error_message:"Failed to parse JSON line:"+ line});
+                  // sendError({error_message:"Failed to parse JSON line:"+ line});
                   insufficient=true;
                   save_message = line;
 
@@ -979,17 +998,15 @@ export default {
       } else {
         inputValue = value;
       }
-
       if (inputValue !== undefined) {
-       
         if(previousCharacterCount ===inputValue.length-1 || previousCharacterCount ===inputValue.length+1){
-          characterRevisionCount+=1;
-          // console.log('User Character Modifying :', characterRevisionCount);
+          characterRevisionCount.value+=1;
+          localData['characterRevisionCount']=characterRevisionCount.value;
         }
         previousCharacterCount = textArea.value.length;
         textArea.value = inputValue;
         localData['storage_notes']=inputValue
-        localStorage.setItem(user_id.value, JSON.stringify(localData));
+        
         // localStorage.setItem('storage_notes', inputValue);
         // console.log('Input Value:', inputValue, inputValue.split(/\s+|\n+/).length);
         const words = inputValue.trim().split(/\s+|\n+/);
@@ -1009,22 +1026,16 @@ export default {
             hasFinishTask.value = false;
           }
         }
-        if(previousWordCount === textAreaWordCount.value-1){
-         
-          wordEditingCount+=1;
-          // console.log('User Manual Modifying :', wordEditingCount);
-
+        if(previousWordCount === textAreaWordCount.value-1){    
+          wordEditingCount.value+=1;
+          localData['wordEditingCount']=wordEditingCount.value;
         }else if(previousWordCount > textAreaWordCount.value){
-          wordDeletingCount+=previousWordCount - textAreaWordCount.value;
-          // console.log('User Manual Deleting :', wordDeletingCount);
-        }
-        // else if(previousWordCount === textAreaWordCount.value){
-        //   characterRevisionCount+=1;
-        //   console.log('User Character Modifying :', characterRevisionCount);
-        // }
-
+          wordDeletingCount.value+=previousWordCount - textAreaWordCount.value;
+          localData['wordDeletingCount']=wordDeletingCount.value;
       }
+      localStorage.setItem(user_id.value, JSON.stringify(localData));
     };
+  };
     const handlePromptInput = (e, value) => {
       let inputValue;
       if (e && e.target) {
@@ -1214,8 +1225,9 @@ export default {
       focusTimeStart = 0;
     };
 
-    document.addEventListener('visibilitychange', () => {
+    const handleVisibilityChange= () => {
       console.log('Visibility Change:', document.visibilityState);
+
       if (document.visibilityState === 'visible') {
         // console.log('User is focused on the page');
         sendBehavior({
@@ -1238,7 +1250,7 @@ export default {
         // Perform actions when the page is not in focus
       }
       focus_leave=new Date().getTime();
-    });
+    };
     
     window.addEventListener('resize', () => {
       if(window.innerWidth<992){
@@ -1307,7 +1319,7 @@ export default {
     }
 
     return { messages,
-      renderNextButton,
+      attendTour,
       timeSeconds,
       messageSending,
       minWords,
@@ -1506,6 +1518,7 @@ export default {
   z-index: 1;
 }
 .note_panel{
+  width: 100%;
   display: flex;
   /* align-items: center; */
   margin-top: 8px;
@@ -1590,6 +1603,9 @@ export default {
   height: 100%;
 
 }
+.note .notice .el-text {
+  display: inline;
+}
 .note>>>.el-textarea__inner{
   border-radius: 10px;
   border: none;
@@ -1669,6 +1685,8 @@ export default {
 }
 
 .submit_block{
+  min-width: 160px;
+  flex: 1;
   display: flex;
   flex-direction:column ;
   /* justify-content: end; */
@@ -1677,7 +1695,7 @@ export default {
 .submit_block>>>.el-form-item{
   /* padding: 0; */
   margin: 0;
-  margin-bottom:4px;
+  margin-bottom:6px;
 }
 
 .mobile-drawer{

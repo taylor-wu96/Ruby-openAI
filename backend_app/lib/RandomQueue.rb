@@ -50,8 +50,8 @@ module RubyOpenAI
       raise RuntimeError, 'Could not send the delete request to SQS', e
     end
 
-    def fill_task(numoftask = 400)
-      (1..numoftask).each do |i|
+    def fill_task(num_of_task = 400)
+      (1..num_of_task).each do |i|
         @queue.send_message(queue_url: @queue, message_body: { task: i.even? ? 'CREATIVE' : 'PRACTICAL' }.to_json)
       end
     end
