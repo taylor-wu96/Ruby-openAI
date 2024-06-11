@@ -352,9 +352,10 @@ module RubyOpenAI
         # task = Task.create(task_name: CREATVIE_TASK, chat_id: new_chat.id)
 
         queue = RandomQueue.new(Api.config)
-        task_body = queue.random_task
-        { message_id: task_body.message_id, receipt_handle: task_body.receipt_handle,
-          task_name: JSON.parse(task_body.body)['task'] }.to_json
+        # task_body = queue.random_task
+        queue.random_task
+        # { message_id: task_body.message_id, receipt_handle: task_body.receipt_handle,
+        #   task_name: JSON.parse(task_body.body)['task'] }.to_json
         # task_name = JSON.parse(task_body.body)['task']
         # task_name.to_json
         # Task.create(task_name:, chat_id: new_chat.id, message_id: task_body.message_id,
