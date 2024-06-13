@@ -34,7 +34,7 @@
                   name="NoteArea"
                   v-model="textArea"
                   type="textarea"
-                  placeholder="Leave some notes here..."
+                  placeholder="Please AVOID leaving this window for the duration of this task – using external tools might reduce your final reward."
                   :autosize="{ minRows: textAreaRowRef , maxRows: textAreaRowRef}"
                   @input="handleInput($event, textArea)"
 
@@ -53,7 +53,7 @@
                     <div><el-icon size="small"><Finished /></el-icon> Word count: {{ textAreaWordCount }} ( {{minWords}}-{{maxWords}} max ) </div>
                     <div> <el-icon size="small"><Timer /></el-icon>Try to finish in:&nbsp; <span v-html="timeSeconds"></span> </div>
                     <div class="notice">
-                      <el-text size="small">* Please remain within this window and focus on completing the entire task. </el-text>
+                      <el-text size="small">* Please <b>AVOID</b> leaving this window for the duration of this task – using external tools might reduce your final reward.</el-text>
                     </div>
                   </div>
                   <el-form ref="submitTaskRef"  label-width="auto" class="submit_block">
@@ -844,8 +844,10 @@ export default {
         sender: 'assistant',
       };
       messages.value.push(receivedMessage);
-
-
+      if(promptEndTime===0){
+        promptEndTime=new Date().getTime();
+      }
+      
       const response = await fetch(api_url,
       {
         method: "POST",
@@ -1037,13 +1039,12 @@ export default {
     };
   };
     const handlePromptInput = (e, value) => {
-      let inputValue;
       if (e && e.target) {
         inputValue = e.target.value;
       } else {
         inputValue = value;
       }
-      if(inputValue!==undefined){
+      if(inputValue!==undefined){     
         if(promptStartTime===0){
           promptStartTime=new Date().getTime();
         }
