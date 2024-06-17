@@ -1039,12 +1039,13 @@ export default {
     };
   };
     const handlePromptInput = (e, value) => {
+      let promptInputValue;
       if (e && e.target) {
-        inputValue = e.target.value;
+        promptInputValue = e.target.value;
       } else {
-        inputValue = value;
+        promptInputValue = value;
       }
-      if(inputValue!==undefined){     
+      if(promptInputValue!==undefined){     
         if(promptStartTime===0){
           promptStartTime=new Date().getTime();
         }
