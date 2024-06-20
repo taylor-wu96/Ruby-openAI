@@ -64,6 +64,30 @@ module RubyOpenAI
       end
     end
 
+    def fill_task_imbalance(taskdata)
+      task_arr = []
+      # print('task data:', taskdata)
+      TASK_TYPES.each do |task|
+        # print('task:', task)
+        num_of_task = taskdata[task].to_i
+        # print('num_of_task:', num_of_task)
+        (1..num_of_task).each do |_num|
+          # print('task:', task, num)
+          task_arr.push(task)
+        end
+      end
+      task_arr.shuffle!
+      print('task_arr:', task_arr)
+      # for i in task_arr do
+      #   @queue.send_message(queue_url: @queue,
+      #                       message_body: { task: i }.to_json)
+      # end
+      (1..task_arr.length).each do |i|
+        @queue.send_message(queue_url: @queue,
+                            message_body: { task: task_arr[i] }.to_json)
+      end
+    end
+
     def clear_queue
       @sqs.purge_queue(queue_url: @url)
     end

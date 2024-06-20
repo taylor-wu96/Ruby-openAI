@@ -17,6 +17,7 @@ module RubyOpenAI
     # plugin :default_headers
     PRACTICAL_TASK = 'practical'
     CREATVIE_TASK = 'creative'
+    TASK_TYPES = %w[CREATIVE PRACTICAL].freeze
     BASE_PROMPT = 'Act as a travel advisor and provide technical insight on travel aspect suggestions. Write in active voice to make sentences more engaging and easier to follow. The user you are responding to needs to complete a writing task about airports. As the strict advisor, you must keep your replies less than 100 words and briefer is better.'
     TEST_LOREM = 'lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
 
@@ -325,6 +326,24 @@ module RubyOpenAI
         response['Content-Type'] = 'application/json'
         response.status = 200
         queue.fill_task(num_of_task).to_json
+      end
+
+      r.post 'reset-queue-imbalance' do
+        data = JSON.parse(r.body.read)
+
+        TASK_TYPES.each do |task|
+          next unless data[task].nil? || data[task].to_i < 0
+
+          response['Content-Type'] = 'application/json'
+          response.status = 500
+          { success: false, message: 'Invalid type given' }.to_json
+          break
+        end
+        queue = RandomQueue.new(Api.config)
+        queue.clear_queue
+        response['Content-Type'] = 'application/json'
+        response.status = 200
+        queue.fill_task_imbalance(data).to_json
       end
 
       r.get 'clear-queue' do
